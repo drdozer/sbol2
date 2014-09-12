@@ -137,6 +137,10 @@ trait SBOL2Component_Sequence extends SBOL2Base {
 
   abstract override def nestedBuilders: Seq[NestedBuilder[Any]] =
     super.nestedBuilders ++ Seq(
+      BuilderMacro.nestedBuilder[SBOL2Component_Sequence, MultiRange](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Component_Sequence, Cut](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Component_Sequence, OrientedCut](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Component_Sequence, Range](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, OrientedRange](importedPackages))
 
 }

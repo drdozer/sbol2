@@ -194,7 +194,7 @@ object ToggleSwitch {
     val sbolDocument = SBOLDocument(Seq(lacI_Inverter_module, tetR_Inverter_module, toggle_switch_module))
 
     println("SBOL2 data model")
-    println(lacI_Inverter_module)
+    println(sbolDocument)
 
     val dtree = DTIO.build(SBOL2, Datatree)(sbolDocument)
 
