@@ -7,7 +7,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * Created by caroline on 23/08/2014.
  */
 trait SBOL2Component_Sequence extends SBOL2Base {
-  importedPackages : Relations with SBOL2Component =>
+  importedPackages : SBOL2Component =>
 
   trait CutLocation extends Location {
     def at: One[Int]
@@ -91,7 +91,6 @@ trait SBOL2Component_Sequence extends SBOL2Base {
       {
         import implicits._
         val ph = propertyHelper(dt)
-        import ph.identified2Value
 
         implicitly[PropertyWomble[Identified]].asProperties(dt, or) ++
           ph.asProperty("sbol2" -> "start", or.start.seq) ++

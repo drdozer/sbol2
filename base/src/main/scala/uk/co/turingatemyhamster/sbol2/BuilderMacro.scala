@@ -145,30 +145,32 @@ object BuilderMacro {
         val resType = p.typeSignature.resultType
         val resTypeName = resType.typeSymbol.name.toString
         val resTypeNameL = resTypeName.substring(0, 1).toLowerCase + resTypeName.substring(1)
-        val resOpsName = TermName(resTypeNameL + "Ops")
+        val resOpsName = TypeName(resTypeNameL + "Ops")
 
         val arg = p.typeSignature.resultType.typeArgs.head
         val argTermName = arg.typeSymbol.name.toTermName
         val argType = if(arg.typeArgs.isEmpty) {
-          q"sb.$argTermName"
+          q"$argTermName"
         } else {
           val aArg = arg.typeArgs.head
           val aArgType = aArg.typeSymbol.name.toTypeName
-          q"sb.$argTermName[sb.${aArgType}]"
+          q"$argTermName[${aArgType}]"
         }
+
+        //sb.${resOpsName}[${argType}].seq(i.${TermName(pn)}))
 
           q"""ph.asProperty(
              dt.Name(
                 namespaceURI = dt.URI(${ann.getOrElse("namespaceURI", rdfProps("namespaceURI"))}),
                 prefix = ${ann.getOrElse("prefix", rdfProps("prefix"))},
                 localPart = ${ann("localPart")}
-             ), sb.${resOpsName}[${argType}].seq(i.${TermName(pn)}))"""
+             ), i.${TermName(pn)}.seq)"""
       }
 
       val allProperties = (implicits ++ localProperties).reduce((a, b) => q"$a ++ $b")
 
       c.Expr[SB#PropertyWomble[I]] {
-        q"""def womble[SB <: ${sbTpe} with ${sbol2BaseTpe} with ${relationsTpe}](sb: SB): sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}] =
+        q"""def womble[SB <: ${sbTpe} with ${sbol2BaseTpe}](sb: SB): sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}] =
            new sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]
            {
            def asProperties[DT <: ${datatreeTpe} with ${relationsTpe}]
@@ -177,6 +179,7 @@ object BuilderMacro {
              : Seq[dt.NamedProperty] =
              {
                import implicits._
+               import sb._
                val ph = sb.propertyHelper(dt)
                ${allProperties}
              }

@@ -9,7 +9,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * @author Matthew Pocock
  */
 trait SBOL2Model extends SBOL2Base {
-  importedPackages : Relations =>
+  importedPackages =>
 
   @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Model")
   case class Model(identity: One[URI],
@@ -49,5 +49,26 @@ trait SBOL2Model extends SBOL2Base {
 
   abstract override def topBuilders: Seq[TopBuilder[Any]] =
     super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Model, Model](importedPackages))
+
+}
+
+
+object Tester {
+  def wombler(sb: SBOL2Model) = BuilderMacro.propertyWomble[SBOL2Model, sb.Model](sb)
+
+  def wimpler(sb: SBOL2Model) = {
+    def womble[SB <: uk.co.turingatemyhamster.sbol2.SBOL2Model with uk.co.turingatemyhamster.sbol2.SBOL2Base](sb: SB): sb.PropertyWomble[sb.Model] = {
+      final class anon extends sb.PropertyWomble[sb.Model] {
+        def asProperties[DT <: uk.co.turingatemyhamster.datatree.Datatree with uk.co.turingatemyhamster.cake.Relations](dt: DT, i: sb.Model)(implicit implicits: sb.Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] = {
+          import implicits._;
+          import sb._;
+          val ph = sb.propertyHelper(dt);
+          implicitly[sb.PropertyWomble[sb.TopLevel]].asProperties(dt, i).$plus$plus(ph.asProperty(dt.Name(namespaceURI = dt.URI("http://sbols.org/sbolv2/"), prefix = "sbol2", localPart = "source"), i.source.seq)).$plus$plus(ph.asProperty(dt.Name(namespaceURI = dt.URI("http://sbols.org/sbolv2/"), prefix = "sbol2", localPart = "framework"), i.framework.seq)).$plus$plus(ph.asProperty(dt.Name(namespaceURI = dt.URI("http://sbols.org/sbolv2/"), prefix = "sbol2", localPart = "language"), i.language.seq)).$plus$plus(ph.asProperty(dt.Name(namespaceURI = dt.URI("http://sbols.org/sbolv2/"), prefix = "sbol2", localPart = "roles"), i.roles.seq))
+        }
+      };
+      new anon()
+    };
+    womble(sb)
+  }
 
 }

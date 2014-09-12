@@ -9,7 +9,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * @author Matthew Pocock
  */
 trait SBOL2Collection extends SBOL2Base {
-  importedPackages : Relations =>
+  importedPackages =>
 
   @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Collection")
   case class Collection(identity: One[URI],

@@ -10,8 +10,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
  *
  * @author Matthew Pocock
  */
-abstract class SBOL2Base {
-  importedPackages : Relations =>
+abstract class SBOL2Base extends Relations {
 
   type URI
   type QName

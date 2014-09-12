@@ -6,7 +6,7 @@ import uk.co.turingatemyhamster.cake.Relations
  * SBOL2 Module package.
  */
 trait SBOL2Module extends SBOL2Base {
-  importedPackages : Relations with SBOL2Component with SBOL2Model =>
+  importedPackages : SBOL2Component with SBOL2Model =>
 
   case class Module(identity: One[URI],
                     persistentIdentity: ZeroOne[URI] = ZeroOne(),
