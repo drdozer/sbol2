@@ -21,14 +21,19 @@ trait SBOL2Model extends SBOL2Base {
                    name: ZeroOne[String] = ZeroOne(),
                    description: ZeroOne[String] = ZeroOne(),
 
-                   @RDFProperty(localPart = "source") source: One[URI],
-                   @RDFProperty(localPart = "language") language: One[URI],
-                   @RDFProperty(localPart = "framework") framework: One[URI],
-                   @RDFProperty(localPart = "roles") roles: OneMany[URI])
+                   @RDFProperty(localPart = "source")
+                   source: One[URI],
+                   @RDFProperty(localPart = "language")
+                   language: One[URI],
+                   @RDFProperty(localPart = "framework")
+                   framework: One[URI],
+                   @RDFProperty(localPart = "roles")
+                   role: OneMany[URI])
     extends TopLevel
 
   object Model {
-    implicit val propertyWomble: PropertyWomble[Model] = BuilderMacro.propertyWomble[SBOL2Model, Model](importedPackages)
+    implicit val propertyWomble: PropertyWomble[Model] =
+      BuilderMacro.propertyWomble[SBOL2Model, Model](importedPackages)
   }
 
   abstract override def topBuilders: Seq[TopBuilder[Any]] =
