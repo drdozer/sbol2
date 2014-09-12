@@ -157,6 +157,7 @@ object BuilderMacro {
           q"$argTermName[${aArgType}]"
         }
 
+        //i.${TermName(pn)}.seq)
         //sb.${resOpsName}[${argType}].seq(i.${TermName(pn)}))
 
           q"""ph.asProperty(
@@ -180,6 +181,7 @@ object BuilderMacro {
              {
                import implicits._
                import sb._
+               import sb.{OneSyntax, OneOps}
                val ph = sb.propertyHelper(dt)
                ${allProperties}
              }

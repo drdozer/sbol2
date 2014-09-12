@@ -65,9 +65,9 @@ object Build extends sbt.Build{
     in(file("packages")).
     settings(baseSettings:_*).
     settings(
-    target := target.value / "sbol2-packages-jvm",
-    moduleName := "sbol2-packages",
-    scalacOptions ++= Seq("-Ymacro-debug-verbose", "Ytyper-debug")
+      //scalacOptions ++= Seq("-Ymacro-debug-verbose", "Ytyper-debug"),
+      target := target.value / "sbol2-packages-jvm",
+      moduleName := "sbol2-packages"
   )
 
   lazy val packagesJs = cross.js.
@@ -75,9 +75,9 @@ object Build extends sbt.Build{
     in(file("packages")).
     settings(scalaJSSettings ++ baseSettings:_*).
     settings(
+//      scalacOptions ++= Seq("-Ymacro-debug-lite"),
     target := target.value / "sbol2-packages-js",
-    moduleName := "sbol2-packages",
-      scalacOptions ++= Seq("-Ymacro-debug-lite")
+    moduleName := "sbol2-packages"
   )
 
   lazy val jvm = cross.jvm.dependsOn(packagesJvm % "compile->compile;test->test").settings(
