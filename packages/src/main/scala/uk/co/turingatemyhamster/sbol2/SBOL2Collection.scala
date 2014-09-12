@@ -20,24 +20,13 @@ trait SBOL2Collection extends SBOL2Base {
                         displayId: ZeroOne[String] = ZeroOne(),
                         name: ZeroOne[String] = ZeroOne(),
                         description: ZeroOne[String] = ZeroOne(),
+
+                        @RDFProperty(localPart = "member")
                         members: ZeroMany[UriReference[TopLevel]] = ZeroMany())
     extends TopLevel
 
   object Collection {
-
-    implicit val propertyWomble = new PropertyWomble[Collection] {
-      def asProperties[DT <: Datatree with Relations]
-      (dt: DT, c: Collection)
-      (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] =
-      {
-        import implicits._
-        val ph = propertyHelper(dt)
-
-        implicitly[PropertyWomble[TopLevel]].asProperties(dt, c) ++
-          ph.asProperty("sbol2" -> "member", c.members.seq)
-      }
-    }
-
+    implicit val propertyWomble = BuilderMacro.propertyWomble[SBOL2Collection, Collection](importedPackages)
   }
 
   abstract override def topBuilders: Seq[TopBuilder[_]] =

@@ -115,7 +115,7 @@ object BuilderMacro {
       q"implicitly[sb.PropertyWomble[sb.${up.typeSymbol.name.toTypeName}]].asProperties(dt, i)"
     }
 
-    if(tlClass.isCaseClass) {
+    val annotations = if(tlClass.isCaseClass) {
       val cstr = tlClass.primaryConstructor
 
       // fixme: we're flattening multi-param case-class constructors - things may explode
@@ -127,51 +127,65 @@ object BuilderMacro {
         p.name.toString ->(p, accessor)
       }).toMap
       val localParams = cstrParams.filter { case (k, v) => v._2.overrides.isEmpty}
-      val annotations = localParams.mapValues { case (param, accessor) => (param, accessor, param.annotations) }
-      val notSkipped = annotations.filterNot { case (k, v) => v._3.contains((_: Annotation).tree.tpe =:= c.typeOf[RDFSkip]) }
-      val withRdfProperty = notSkipped.mapValues { case(p, accessor, anns) => (p, accessor, anns.filter((_: Annotation).tree.tpe =:= c.typeOf[RDFProperty])) }
-      for((pn, (p, accessor, rp)) <- withRdfProperty) {
-        if(rp.isEmpty)
-          c.abort(c.enclosingPosition, s"Unable to generate PropertyWomble[${tlTpe}] because property ${pn} doesn't have a RDFProperty annotation.")
-      }
+      localParams.mapValues { case (param, accessor) => (accessor, param.annotations)}
+    } else {
+      val localProperties = tlTpe.decls.collect {
+        case ms if ms.isMethod && ms.isAbstract => ms.asMethod
+      } filter (_.typeSignature.paramLists.isEmpty)
 
-      val withName = withRdfProperty.mapValues { case (p, accessor, rp) =>
-        val rdfPA = rp.head
-        (p, accessor, Map(rdfPA.tree.children.tail map (t => t.children.head.toString() -> t.children.last) :_*))
-      }
+      (for(accessor <- localProperties) yield {
+        accessor.name.toString -> (accessor, accessor.annotations)
+      }).toMap
+    }
+
+    val notSkipped = annotations.filterNot { case (k, v) => v._2.contains((_: Annotation).tree.tpe =:= c.typeOf[RDFSkip]) }
+    val withRdfProperty = notSkipped.mapValues { case(accessor, anns) => (accessor, anns.filter((_: Annotation).tree.tpe =:= c.typeOf[RDFProperty])) }
+    for((pn, (accessor, rp)) <- withRdfProperty) {
+      if(rp.isEmpty)
+        c.abort(c.enclosingPosition, s"Unable to generate PropertyWomble[${tlTpe}] because property ${pn} doesn't have a RDFProperty annotation.")
+    }
+    val withName = withRdfProperty.mapValues { case (accessor, rp) =>
+      val rdfPA = rp.head
+      (accessor, Map(rdfPA.tree.children.tail map (t => t.children.head.toString() -> t.children.last) :_*))
+    }
 
 
-      val localProperties = withName map { case (pn, (p, accessor, ann)) =>
-        val resType = p.typeSignature.resultType
-        val resTypeName = resType.typeSymbol.name.toString
-        val resTypeNameL = resTypeName.substring(0, 1).toLowerCase + resTypeName.substring(1)
-        val resOpsName = TypeName(resTypeNameL + "Ops")
+    val localProperties = withName map { case (pn, (accessor, ann)) =>
+      val resType = accessor.typeSignature.resultType
+      val resTypeName = resType.typeSymbol.name.toString
+      val resTypeNameL = resTypeName.substring(0, 1).toLowerCase + resTypeName.substring(1)
+      val resOpsName = TermName(resTypeNameL + "Ops")
 
-        val arg = p.typeSignature.resultType.typeArgs.head
-        val argTermName = arg.typeSymbol.name.toTermName
-        val argType = if(arg.typeArgs.isEmpty) {
-          q"$argTermName"
-        } else {
-          val aArg = arg.typeArgs.head
-          val aArgType = aArg.typeSymbol.name.toTypeName
-          q"$argTermName[${aArgType}]"
+      val arg = accessor.typeSignature.resultType.typeArgs.head
+      val argTypeName = arg.typeSymbol.name.toTypeName
+      val argType = if(arg.typeArgs.isEmpty) {
+        sb.actualType.members.collectFirst { case m if m.name == argTypeName =>
+          m
+        } match {
+          case None =>
+            tq"$argTypeName"
+          case Some(m) =>
+            tq"sb.$argTypeName"
         }
-
-        //i.${TermName(pn)}.seq)
-        //sb.${resOpsName}[${argType}].seq(i.${TermName(pn)}))
-
-          q"""ph.asProperty(
-             dt.Name(
-                namespaceURI = dt.URI(${ann.getOrElse("namespaceURI", rdfProps("namespaceURI"))}),
-                prefix = ${ann.getOrElse("prefix", rdfProps("prefix"))},
-                localPart = ${ann("localPart")}
-             ), i.${TermName(pn)}.seq)"""
+      } else {
+        val aArg = arg.typeArgs.head
+        val aArgType = aArg.typeSymbol.name.toTypeName
+        tq"sb.$argTypeName[sb.${aArgType}]"
       }
 
-      val allProperties = (implicits ++ localProperties).reduce((a, b) => q"$a ++ $b")
+      q"""ph.asProperty(
+          dt.Name(
+            namespaceURI = dt.URI(${ann.getOrElse("namespaceURI", rdfProps("namespaceURI"))}),
+            prefix = ${ann.getOrElse("prefix", rdfProps("prefix"))},
+            localPart = ${ann("localPart")}
+          ), sb.${resOpsName}[${argType}].seq(i.${TermName(pn)})
+        )"""
+    }
 
-      c.Expr[SB#PropertyWomble[I]] {
-        q"""def womble[SB <: ${sbTpe} with ${sbol2BaseTpe}](sb: SB): sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}] =
+    val allProperties = (implicits ++ localProperties).reduce((a, b) => q"$a ++ $b")
+
+    c.Expr[SB#PropertyWomble[I]] {
+      q"""def womble[SB <: ${sbTpe} with ${sbol2BaseTpe}](sb: SB): sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}] =
            new sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]
            {
            def asProperties[DT <: ${datatreeTpe} with ${relationsTpe}]
@@ -183,15 +197,13 @@ object BuilderMacro {
                import sb._
                import sb.{OneSyntax, OneOps}
                val ph = sb.propertyHelper(dt)
+               import ph.identified2Value
                ${allProperties}
              }
            }
 
            womble(${sb})
         """
-      }
-    } else {
-      c.abort(c.enclosingPosition, s"Unable to generate PropertyWomble[${tlTpe}] because it is not a case class.")
     }
   }
 

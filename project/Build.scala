@@ -68,27 +68,33 @@ object Build extends sbt.Build{
       //scalacOptions ++= Seq("-Ymacro-debug-verbose", "Ytyper-debug"),
       target := target.value / "sbol2-packages-jvm",
       moduleName := "sbol2-packages"
-  )
+    )
 
   lazy val packagesJs = cross.js.
     dependsOn(baseJs % "compile->compile;test->test").
     in(file("packages")).
     settings(scalaJSSettings ++ baseSettings:_*).
     settings(
-//      scalacOptions ++= Seq("-Ymacro-debug-lite"),
-    target := target.value / "sbol2-packages-js",
-    moduleName := "sbol2-packages"
-  )
+      //      scalacOptions ++= Seq("-Ymacro-debug-lite"),
+      target := target.value / "sbol2-packages-js",
+      moduleName := "sbol2-packages"
+    )
 
-  lazy val jvm = cross.jvm.dependsOn(packagesJvm % "compile->compile;test->test").settings(
-    scalaVersion := "2.11.2",
-    resolvers += "bintray/non" at "http://dl.bintray.com/non/maven",
-    libraryDependencies += "org.jsawn" %% "jawn-parser" % "0.5.4"
-  ).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings :_*)
+  lazy val jvm = cross.jvm.
+    dependsOn(packagesJvm % "compile->compile;test->test").
+    in(file("jvm")).
+    settings(baseSettings:_*).
+    settings(
+      moduleName := "sbol2"
+    )
 
-  lazy val js = cross.js.dependsOn(packagesJs % "compile->compile;test->test").settings(
-    scalaVersion := "2.11.2",
-    (jsEnv in Test) := new NodeJSEnv
-  ).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings :_*)
+  lazy val js = cross.js.
+    dependsOn(packagesJs % "compile->compile;test->test").
+    in(file("js")).
+    settings(scalaJSSettings ++ baseSettings:_*).
+    settings(
+      moduleName := "sbol2",
+      (jsEnv in Test) := new NodeJSEnv
+    )
 }
 

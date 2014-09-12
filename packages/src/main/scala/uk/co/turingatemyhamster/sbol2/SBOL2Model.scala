@@ -29,30 +29,9 @@ trait SBOL2Model extends SBOL2Base {
 
   object Model {
     implicit val propertyWomble: PropertyWomble[Model] = BuilderMacro.propertyWomble[SBOL2Model, Model](importedPackages)
-
-//    new PropertyWomble[Model] {
-//      def asProperties[DT <: Datatree with Relations]
-//      (dt: DT, m: Model)
-//      (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] =
-//      {
-//        import implicits._
-//        val ph = propertyHelper(dt)
-//
-//        implicitly[PropertyWomble[TopLevel]].asProperties(dt, m) ++
-//          ph.asProperty("sbol2" -> "source", m.source.seq) ++
-//          ph.asProperty("sbol2" -> "language", m.language.seq)
-//      }
-//    }
-
   }
-
 
   abstract override def topBuilders: Seq[TopBuilder[Any]] =
     super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Model, Model](importedPackages))
 
-}
-
-
-object Tester {
-  def wombler(sb: SBOL2Model) = BuilderMacro.propertyWomble[SBOL2Model, sb.Model](sb)
 }
