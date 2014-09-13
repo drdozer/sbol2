@@ -11,8 +11,8 @@ trait SBOL2Component_Sequence extends SBOL2Base {
 
   @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "CutLocation")
   trait CutLocation extends Location {
-    @RDFProperty(localPart = "at")
-    def at: One[Int]
+    @RDFProperty(localPart = "after")
+    def after: One[Int]
   }
 
   object CutLocation {
@@ -79,7 +79,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
                  version: ZeroOne[String] = ZeroOne(),
                  timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                  annotations: ZeroMany[Annotation] = ZeroMany(),
-                 at: One[Int])
+                 after: One[Int])
     extends CutLocation
 
   object Cut {
@@ -93,7 +93,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
                          version: ZeroOne[String] = ZeroOne(),
                          timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                          annotations: ZeroMany[Annotation] = ZeroMany(),
-                         at: One[Int],
+                         after: One[Int],
                          orientation: One[Orientation])
     extends CutLocation with Oriented
 
@@ -135,7 +135,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   }
 
 
-  abstract override def nestedBuilders: Seq[NestedBuilder[Any]] =
+  abstract override def nestedBuilders: Seq[NestedBuilder[Identified]] =
     super.nestedBuilders ++ Seq(
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, MultiRange](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, Cut](importedPackages),

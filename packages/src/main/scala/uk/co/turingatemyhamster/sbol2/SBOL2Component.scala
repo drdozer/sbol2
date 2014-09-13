@@ -194,12 +194,12 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, StructuralConstraint](importedPackages)
   }
 
-  abstract override def topBuilders: Seq[TopBuilder[_]] =
+  abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
     super.topBuilders ++ Seq(
       BuilderMacro.topBuilder[SBOL2Component, Component](importedPackages),
       BuilderMacro.topBuilder[SBOL2Component, Structure](importedPackages))
 
-  abstract override def nestedBuilders: Seq[NestedBuilder[Any]] =
+  abstract override def nestedBuilders: Seq[NestedBuilder[Identified]] =
     super.nestedBuilders ++ Seq(
       BuilderMacro.nestedBuilder[SBOL2Component, StructuralInstantiation](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component, RefersTo](importedPackages),

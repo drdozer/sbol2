@@ -36,7 +36,7 @@ trait SBOL2Model extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Model, Model](importedPackages)
   }
 
-  abstract override def topBuilders: Seq[TopBuilder[Any]] =
+  abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
     super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Model, Model](importedPackages))
 
 }

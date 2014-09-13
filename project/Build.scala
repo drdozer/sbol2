@@ -18,6 +18,7 @@ object Build extends sbt.Build{
       "com.lihaoyi" %% "acyclic" % "0.1.2" % "provided",
       "com.lihaoyi" %%% "utest" % "0.2.3"
     ),
+    scalacOptions := Seq("-explaintypes"),
     addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.2")
   ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 

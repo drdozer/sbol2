@@ -39,18 +39,45 @@ object BuilderMacro {
     }
     val rdfProps = Map(rdfType.tree.children.tail map (t => t.children.head.toString() -> t.children.last) :_*)
 
+    val tlClass = tlTpe.typeSymbol.asClass
+    val cstr = tlClass.primaryConstructor
+    val cstrParams = for
+    {
+      pl <- cstr.asMethod.paramLists
+      p <- pl
+    } yield {
+      val sig = p.typeSignature
+      val arg = sig.typeArgs.head
+      val argTypeName = arg.typeSymbol.name.toTypeName
+      val argType = if(arg.typeArgs.isEmpty) {
+        sb.actualType.members.collectFirst { case m if m.name == argTypeName =>
+          m
+        } match {
+          case None =>
+            tq"$argTypeName"
+          case Some(m) =>
+            tq"sb.$argTypeName"
+        }
+      } else {
+        val aArg = arg.typeArgs.head
+        val aArgType = aArg.typeSymbol.name.toTypeName
+        tq"sb.$argTypeName[sb.${aArgType}]"
+      }
+      q"""$p = propertyWomble.readProperty[DT, sb.${sig.typeSymbol}[${argType}]](dt)(tl, ${p.name.toString})"""
+    }
+
     val expr = c.Expr[BT] {
       q"""def builder[SB <: ${sbTpe}](sb: SB)
-             (implicit propertyWomble: sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]) = new sb.${btTpe.typeSymbol}[$tlTpe]
+             (implicit propertyWomble: sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]) = new sb.${btTpe.typeSymbol}[sb.${tlTpe.typeSymbol.name.toTypeName}]
            {
              override def buildTo[DT <: $datatreeTpe with $relationsTpe]
              (dt: DT)
-             (implicit implicits: sb.Implicits[dt.URI, dt.Name, dt.PropertyValue])
+             (implicit implicits: sb.ToImplicits[dt.URI, dt.Name, dt.PropertyValue])
              : PartialFunction[sb.${TypeName(idType)}, dt.${TypeName(docType)}] =
              {
                case tl : sb.${tlTpe.typeSymbol.name.toTypeName} =>
                        import implicits._
-                       val ph = sb.propertyHelper(dt)(implicits)
+                       val ph = sb.toPropertyHelper(dt)(implicits)
                        dt.${TermName(docType)}(
                           identity = ph.mapIdentity(tl),
                           `type` = dt.One(dt.Name(
@@ -63,11 +90,29 @@ object BuilderMacro {
                           )
                        )
              }
+
+             override def buildFrom[DT <: $datatreeTpe with $relationsTpe]
+             (dt: DT)
+             (implicit implicits: sb.FromImplicits[dt.URI, dt.Name, dt.PropertyValue])
+             : PartialFunction[dt.${TypeName(docType)}, sb.${tlTpe.typeSymbol.name.toTypeName}] =
+             {
+               case tl if tl.`type` == dt.Name(
+                               namespaceURI = dt.URI(${rdfProps("namespaceURI")}),
+                               prefix = ${rdfProps("prefix")},
+                               localPart = ${rdfProps("localPart")}) =>
+                 import implicits._
+                 val ph = sb.fromPropertyHelper(dt)(implicits)
+                 sb.${tlTpe.typeSymbol.name.toTermName}(
+                    ..$cstrParams
+                 )
+             }
            }
 
            builder($sb)
            """
     }
+
+//    println(expr)
 
     expr
   }
@@ -124,7 +169,7 @@ object BuilderMacro {
         p <- pl
       } yield {
         val accessor = tlTpe.member(p.name)
-        p.name.toString ->(p, accessor)
+        p.name.toString -> (p, accessor)
       }).toMap
       val localParams = cstrParams.filter { case (k, v) => v._2.overrides.isEmpty}
       localParams.mapValues { case (param, accessor) => (accessor, param.annotations)}
@@ -190,17 +235,24 @@ object BuilderMacro {
            {
            def asProperties[DT <: ${datatreeTpe} with ${relationsTpe}]
              (dt: DT, i: sb.${tlTpe.typeSymbol.name.toTypeName})
-             (implicit implicits: sb.Implicits[dt.URI, dt.Name, dt.PropertyValue])
+             (implicit implicits: sb.ToImplicits[dt.URI, dt.Name, dt.PropertyValue])
              : Seq[dt.NamedProperty] =
              {
                import implicits._
                import sb._
-               import sb.{OneSyntax, OneOps}
-               val ph = sb.propertyHelper(dt)
+               val ph = sb.toPropertyHelper(dt)
                import ph.identified2Value
                ${allProperties}
              }
-           }
+
+            def readProperty[DT <: ${datatreeTpe} with ${relationsTpe}, T]
+            (dt: DT)
+            (doc: dt.Document, propName: String)
+            (implicit implicits: sb.FromImplicits[dt.URI, dt.Name, dt.PropertyValue]): T = {
+              ???
+            }
+
+          }
 
            womble(${sb})
         """

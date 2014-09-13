@@ -1,9 +1,9 @@
 package uk.co.turingatemyhamster.sbol2
 package examples
 
-import java.io.StringWriter
+import java.io.{StringReader, StringWriter}
 import java.net.URI
-import javax.xml.stream.XMLOutputFactory
+import javax.xml.stream.{XMLInputFactory, XMLOutputFactory}
 
 import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter
 import uk.co.turingatemyhamster.datatree.{RdfIo, Datatree}
@@ -36,7 +36,7 @@ object BamH1 {
           identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut"),
           location = OrientedCut(
             identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut/location"),
-            at = 1,
+            after = 1,
             orientation = Inline
           )
         ),
@@ -44,7 +44,7 @@ object BamH1 {
           identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut"),
           location = OrientedCut(
             identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut/location"),
-            at = 5,
+            after = 5,
             orientation = ReverseComplement
           )
         )
@@ -71,5 +71,15 @@ object BamH1 {
 
     println(rdf)
 
+    val xmlReader = XMLInputFactory.newInstance.createXMLStreamReader(
+      new StringReader(
+        rdf))
+    val readDtree = RdfIo(Datatree).read(xmlReader)
+
+    println(readDtree)
+
+    val readSbolDocument = DTIO.build(SBOL2, Datatree)(readDtree)
+
+    println(readSbolDocument)
   }
 }

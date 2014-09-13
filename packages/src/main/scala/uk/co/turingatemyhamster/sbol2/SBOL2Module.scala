@@ -133,14 +133,14 @@ trait SBOL2Module extends SBOL2Base {
   }
 
 
-  abstract override def nestedBuilders: Seq[NestedBuilder[_]] =
+  abstract override def nestedBuilders: Seq[NestedBuilder[Identified]] =
     super.nestedBuilders ++ Seq(
-      BuilderMacro.nestedBuilder[SBOL2Module, ModuleInstantiation](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Module with SBOL2Component, ModuleInstantiation](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Module, Interaction](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Module, Participation](importedPackages),
-      BuilderMacro.nestedBuilder[SBOL2Module, FunctionalInstantiation](importedPackages))
+      BuilderMacro.nestedBuilder[SBOL2Module with SBOL2Component, FunctionalInstantiation](importedPackages))
 
-  abstract override def topBuilders: Seq[TopBuilder[_]] =
-    super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Module, Module](importedPackages))
+  abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
+    super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Module with SBOL2Model, Module](importedPackages))
 
 }

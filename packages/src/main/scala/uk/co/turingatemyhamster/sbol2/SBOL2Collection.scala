@@ -29,6 +29,6 @@ trait SBOL2Collection extends SBOL2Base {
     implicit val propertyWomble = BuilderMacro.propertyWomble[SBOL2Collection, Collection](importedPackages)
   }
 
-  abstract override def topBuilders: Seq[TopBuilder[_]] =
+  abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
     super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Collection, Collection](importedPackages))
 }

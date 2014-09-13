@@ -32,17 +32,12 @@ abstract class SBOL2Base extends Relations {
   trait Identified {
     @RDFSkip
     def identity: One[URI]
-    
     @RDFProperty(localPart = "persistentIdentity")
     def persistentIdentity: ZeroOne[URI]
-    
-    
     @RDFProperty(localPart = "version")
     def version: ZeroOne[String]
-
     @RDFProperty(localPart = "timestamp")
     def timeStamp: ZeroOne[Timestamp]
-
     @RDFSkip
     def annotations: ZeroMany[Annotation]
   }
@@ -83,10 +78,8 @@ abstract class SBOL2Base extends Relations {
   trait Documented extends Identified {
     @RDFProperty(localPart = "displayId")
     def displayId: ZeroOne[String]
-
     @RDFProperty(localPart = "name")
     def name: ZeroOne[String]
-
     @RDFProperty(localPart = "description")
     def description: ZeroOne[String]
   }
@@ -104,14 +97,17 @@ abstract class SBOL2Base extends Relations {
     implicit val propertyWomble: PropertyWomble[Identified] = new PropertyWomble[Identified] {
       def asProperties[DT <: Datatree with Relations]
       (dt: DT, i: Identified)
-      (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] = {
+      (implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] = {
         import implicits._
-        val ph = propertyHelper(dt)
+        val ph = toPropertyHelper(dt)
         ph.asProperty("sbol2" -> "persistentIdentity", i.persistentIdentity.seq) ++
           ph.annotations(i.annotations.seq) ++
           ph.asProperty("sbol2" -> "version", i.version.seq) ++
           ph.asProperty("sbol2" -> "timeStamp", i.timeStamp.seq)
       }
+
+      override def readProperty[DT <: Datatree with Relations, T]
+      (dt: DT)(doc: dt.Document, propName: String)(implicit implicits: FromImplicits[dt.URI, dt.Name, dt.PropertyValue]) = ???
     }
 
   }
@@ -121,15 +117,18 @@ abstract class SBOL2Base extends Relations {
     implicit val propertyWomble = new PropertyWomble[Documented] {
       def asProperties[DT <: Datatree with Relations]
       (dt: DT, d: Documented)
-      (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] = {
+      (implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] = {
         import implicits._
-        val ph = propertyHelper(dt)
+        val ph = toPropertyHelper(dt)
 
         implicitly[PropertyWomble[Identified]].asProperties(dt, d) ++
           ph.asProperty("sbol2" -> "displayId", d.displayId.seq) ++
           ph.asProperty("sbol2" -> "name", d.name.seq) ++
           ph.asProperty("sbol2" -> "description", d.description.seq)
       }
+
+      override def readProperty[DT <: Datatree with Relations, T]
+      (dt: DT)(doc: dt.Document, propName: String)(implicit implicits: FromImplicits[dt.URI, dt.Name, dt.PropertyValue]) = ???
     }
   }
 
@@ -137,36 +136,38 @@ abstract class SBOL2Base extends Relations {
     implicit val propertyWomble = new PropertyWomble[TopLevel] {
       def asProperties[DT <: Datatree with Relations]
       (dt: DT, tl: TopLevel)
-      (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] = {
+      (implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty] = {
         implicitly[PropertyWomble[Documented]].asProperties(dt, tl)
       }
+
+      override def readProperty[DT <: Datatree with Relations, T]
+      (dt: DT)(doc: dt.Document, propName: String)(implicit implicits: FromImplicits[dt.URI, dt.Name, dt.PropertyValue]) = ???
     }
   }
 
   // IO utility stuff
 
-  trait PropertyWomble[I] {
-    def asProperties[DT <: Datatree with Relations]
-    (dt: DT, i: I)(implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty]
+  trait EnumToString[T] {
+    def toString(t: T): String
   }
 
-  def topBuilders: Seq[TopBuilder[Any]] = Seq()
-  
-  final def topLevels[DT <: Datatree with Relations](dt: DT)
-                                       (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[PartialFunction[TopLevel, dt.TopLevelDocument]] =
-    for(tb <- topBuilders) yield {
-      tb.buildTo(dt)
-    }
+  trait PropertyWomble[I] {
+    def asProperties[DT <: Datatree with Relations]
+    (dt: DT, i: I)(implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[dt.NamedProperty]
 
-  def nestedBuilders: Seq[NestedBuilder[Any]] = Seq()
+    def readProperty[DT <: Datatree with Relations, T]
+    (dt: DT)
+    (doc: dt.Document, propName: String)
+    (implicit implicits: FromImplicits[dt.URI, dt.Name, dt.PropertyValue]): T
+  }
 
   final def nesteds[DT <: Datatree with Relations](dt: DT)
-                                         (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[PartialFunction[Identified, dt.NestedDocument]] =
+                                         (implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]): Seq[PartialFunction[Identified, dt.NestedDocument]] =
       for(tb <- nestedBuilders) yield {
         tb.buildTo(dt)
       }
 
-  trait Implicits[DtURI, DtName, DtPropertyValue] {
+  trait ToImplicits[DtURI, DtName, DtPropertyValue] {
     implicit def resolve: ((String, String)) => DtName
 
     implicit def uri2uri: URI => DtURI
@@ -184,9 +185,13 @@ abstract class SBOL2Base extends Relations {
       string2Value(enumT.toString(t))
   }
 
-  def propertyHelper[DT <: Datatree with Relations]
+  trait FromImplicits[DtURI, DtName, DtPropertyValue] {
+
+  }
+
+  def toPropertyHelper[DT <: Datatree with Relations]
   (dt: DT)
-  (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]) = new Object {
+  (implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]) = new Object {
 
     def asProperty[T, Name](name: Name, values: Seq[T])
                      (implicit fv: T => dt.PropertyValue, evN: Name => dt.Name): Seq[dt.NamedProperty] = {
@@ -227,22 +232,35 @@ abstract class SBOL2Base extends Relations {
     }
   }
 
-  trait EnumToString[T] {
-    def toString(t: T): String
+  def fromPropertyHelper[DT <: Datatree with Relations]
+  (dt: DT)
+  (implicit implicits: FromImplicits[dt.URI, dt.Name, dt.PropertyValue]) = new Object {
+
   }
 
   trait NestedBuilder[+I] {
-
     def buildTo[DT <: Datatree with Relations]
         (dt: DT)
-        (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): PartialFunction[Identified, dt.NestedDocument]
+        (implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]): PartialFunction[Identified, dt.NestedDocument]
+    def buildFrom[DT <: Datatree with Relations]
+        (dt: DT)
+        (implicit implicits: FromImplicits[dt.URI, dt.Name, dt.PropertyValue]): PartialFunction[dt.NestedDocument, I]  = ???
   }
+
+  def nestedBuilders: Seq[NestedBuilder[Identified]] = Seq()
 
   trait TopBuilder[+TL] {
     def buildTo[DT <: Datatree with Relations]
         (dt: DT)
-        (implicit implicits: Implicits[dt.URI, dt.Name, dt.PropertyValue]): PartialFunction[TopLevel, dt.TopLevelDocument]
+        (implicit implicits: ToImplicits[dt.URI, dt.Name, dt.PropertyValue]):
+        PartialFunction[TopLevel, dt.TopLevelDocument]
+    def buildFrom[DT <: Datatree with Relations]
+        (dt: DT)
+        (implicit implicits: FromImplicits[dt.URI, dt.Name, dt.PropertyValue]):
+        PartialFunction[dt.TopLevelDocument, TL]
   }
+
+  def topBuilders: Seq[TopBuilder[TopLevel]] = Seq()
 
 }
 
