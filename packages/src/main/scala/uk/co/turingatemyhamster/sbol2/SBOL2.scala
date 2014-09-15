@@ -1,6 +1,7 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.cake.ScalaRelations
+import uk.co.turingatemyhamster.web.{WebOpsImpl}
+import uk.co.turingatemyhamster.relations.{RelationsOpsScalaImpl}
 
 /**
  * A full implementation of SBOL2 with default bindings to scala datatypes.
@@ -8,8 +9,8 @@ import uk.co.turingatemyhamster.cake.ScalaRelations
  * @author Matthew Pocock
  */
 object SBOL2 extends SBOL2Base
-with ScalaRelations
-with ScalaBase
+with WebOpsImpl
+with RelationsOpsScalaImpl
 with SBOL2Collection
 with SBOL2Component
 with SBOL2Component_Sequence

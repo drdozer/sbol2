@@ -1,16 +1,17 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.cake.Relations
+import uk.co.turingatemyhamster.web.{Web, WebOps}
+import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 
 /**
  * SBOL2 Module package.
  */
 trait SBOL2Module extends SBOL2Base {
-  importedPackages : SBOL2Component with SBOL2Model =>
+  importedPackages : WebOps with RelationsOps with SBOL2Component with SBOL2Model =>
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Module")
-  case class Module(identity: One[URI],
-                    persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Module")
+  case class Module(identity: One[Uri],
+                    persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                     version: ZeroOne[String] = ZeroOne(),
                     timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                     annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -19,7 +20,7 @@ trait SBOL2Module extends SBOL2Base {
                     description: ZeroOne[String] = ZeroOne(),
 
                     @RDFProperty(localPart = "role")
-                    roles: OneMany[URI],
+                    roles: OneMany[Uri],
                     @RDFProperty(localPart = "moduleInstantiation")
                     moduleInstantiations: ZeroMany[ModuleInstantiation] = ZeroMany(),
                     @RDFProperty(localPart = "interaction")
@@ -35,9 +36,9 @@ trait SBOL2Module extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Module with SBOL2Model, Module](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "ModuleInstantiation")
-  case class ModuleInstantiation(identity: One[URI],
-                                 persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "ModuleInstantiation")
+  case class ModuleInstantiation(identity: One[Uri],
+                                 persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                  version: ZeroOne[String] = ZeroOne(),
                                  timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                                  annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -56,9 +57,9 @@ trait SBOL2Module extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Module with SBOL2Component, ModuleInstantiation](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Interaction")
-  case class Interaction(identity: One[URI],
-                         persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Interaction")
+  case class Interaction(identity: One[Uri],
+                         persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                          version: ZeroOne[String] = ZeroOne(),
                          timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                          annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -67,7 +68,7 @@ trait SBOL2Module extends SBOL2Base {
                          description: ZeroOne[String] = ZeroOne(),
 
                          @RDFProperty(localPart = "type")
-                         types: OneMany[URI],
+                         types: OneMany[Uri],
                          @RDFProperty(localPart = "participation")
                          participations: OneMany[Participation])
     extends Documented
@@ -76,15 +77,15 @@ trait SBOL2Module extends SBOL2Base {
     implicit val propertyWomble = BuilderMacro.propertyWomble[SBOL2Module, Interaction](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Participation")
-  case class Participation(identity: One[URI],
-                           persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Participation")
+  case class Participation(identity: One[Uri],
+                           persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                            version: ZeroOne[String] = ZeroOne(),
                            timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                            annotations: ZeroMany[Annotation] = ZeroMany(),
 
                            @RDFProperty(localPart = "role")
-                           roles: OneMany[URI],
+                           roles: OneMany[Uri],
                            @RDFProperty(localPart = "participant")
                            participant: One[UriReference[FunctionalInstantiation]])
     extends Identified
@@ -93,9 +94,9 @@ trait SBOL2Module extends SBOL2Base {
     implicit val propertyWomble = BuilderMacro.propertyWomble[SBOL2Module, Participation](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "FunctionalInstantiation")
-  case class FunctionalInstantiation(identity: One[URI],
-                                     persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "FunctionalInstantiation")
+  case class FunctionalInstantiation(identity: One[Uri],
+                                     persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                      version: ZeroOne[String] = ZeroOne(),
                                      timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                                      annotations: ZeroMany[Annotation] = ZeroMany(),

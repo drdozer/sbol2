@@ -1,7 +1,8 @@
 package uk.co.turingatemyhamster.sbol2
 
 import scala.language.experimental.macros
-import uk.co.turingatemyhamster.cake.Relations
+import uk.co.turingatemyhamster.web.{Web, WebOps}
+import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.Datatree
 
 /**
@@ -31,13 +32,15 @@ object BuilderMacro {
     val sbTpe = c.weakTypeOf[SB]
     val btTpe = c.weakTypeOf[BT]
     val datatreeTpe = c.weakTypeOf[Datatree]
-    val relationsTpe = c.weakTypeOf[Relations]
+    val webOpsTpe = c.weakTypeOf[WebOps]
+    val relationsOpsTpe = c.weakTypeOf[RelationsOps]
 
     val rdfType = tlTpe.typeSymbol.annotations.find(_.tree.tpe =:= c.typeOf[RDFType]).getOrElse {
       c.abort(c.enclosingPosition,
         s"Could not find an RDFType annotation for ${tlTpe}. All objects converted to Datatree must be annotated with a type.")
     }
     val rdfProps = Map(rdfType.tree.children.tail map (t => t.children.head.toString() -> t.children.last) :_*)
+    println(rdfProps)
 
     val tlClass = tlTpe.typeSymbol.asClass
     val cstr = tlClass.primaryConstructor
@@ -67,12 +70,12 @@ object BuilderMacro {
     }
 
     val expr = c.Expr[BT] {
-      q"""def builder[SB <: ${sbTpe}](sb: SB)
+      q"""def builder[SB <: ${sbTpe} with ${relationsOpsTpe}](sb: SB)
              (implicit propertyWomble: sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]) = new sb.${btTpe.typeSymbol}[sb.${tlTpe.typeSymbol.name.toTypeName}]
            {
-             override def buildTo[DT <: $datatreeTpe with $relationsTpe]
+             override def buildTo[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe]
              (dt: DT)
-             (implicit implicits: sb.ToImplicits[dt.URI, dt.Name, dt.PropertyValue])
+             (implicit implicits: sb.ToImplicits[dt.Uri, dt.QName, dt.PropertyValue])
              : PartialFunction[sb.${TypeName(idType)}, dt.${TypeName(docType)}] =
              {
                case tl : sb.${tlTpe.typeSymbol.name.toTypeName} =>
@@ -80,10 +83,10 @@ object BuilderMacro {
                        val ph = sb.toPropertyHelper(dt)(implicits)
                        dt.${TermName(docType)}(
                           identity = ph.mapIdentity(tl),
-                          `type` = dt.One(dt.Name(
-                               namespaceURI = dt.URI(${rdfProps("namespaceURI")}),
-                               prefix = ${rdfProps("prefix")},
-                               localPart = ${rdfProps("localPart")}
+                          `type` = dt.One(dt.QName(
+                               namespace = dt.Namespace(dt.Uri(${rdfProps("namespaceUri")})),
+                               prefix = dt.Prefix(${rdfProps("prefix")}),
+                               localName = dt.LocalName(${rdfProps("localPart")})
                           )),
                           properties = dt.ZeroMany(
                               propertyWomble.asProperties(dt, tl) :_*
@@ -91,15 +94,15 @@ object BuilderMacro {
                        )
              }
 
-             override def buildFrom[DT <: $datatreeTpe with $relationsTpe]
+             override def buildFrom[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe]
              (dt: DT)
-             (implicit implicits: sb.FromImplicits[dt.URI, dt.Name, dt.PropertyValue])
+             (implicit implicits: sb.FromImplicits[dt.Uri, dt.QName, dt.PropertyValue])
              : PartialFunction[dt.${TypeName(docType)}, sb.${tlTpe.typeSymbol.name.toTypeName}] =
              {
-               case tl if tl.`type` == dt.Name(
-                               namespaceURI = dt.URI(${rdfProps("namespaceURI")}),
-                               prefix = ${rdfProps("prefix")},
-                               localPart = ${rdfProps("localPart")}) =>
+               case tl if {println(tl.`type`); tl.`type` == dt.QName(
+                               namespace = dt.Namespace(dt.Uri(${rdfProps("namespaceUri")})),
+                               prefix = dt.Prefix(${rdfProps("prefix")}),
+                               localName = dt.LocalName(${rdfProps("localPart")}))} =>
                  import implicits._
                  val ph = sb.fromPropertyHelper(dt)(implicits)
                  sb.${tlTpe.typeSymbol.name.toTermName}(
@@ -126,7 +129,8 @@ object BuilderMacro {
 
     val sbTpe = c.weakTypeOf[SB]
     val datatreeTpe = c.weakTypeOf[Datatree]
-    val relationsTpe = c.weakTypeOf[Relations]
+    val webOpsTpe = c.weakTypeOf[WebOps]
+    val relationsOpsTpe = c.weakTypeOf[RelationsOps]
     val sbol2BaseTpe = c.weakTypeOf[SBOL2Base]
 
     val tlTpe = c.weakTypeOf[I]
@@ -219,10 +223,10 @@ object BuilderMacro {
       }
 
       q"""ph.asProperty(
-          dt.Name(
-            namespaceURI = dt.URI(${ann.getOrElse("namespaceURI", rdfProps("namespaceURI"))}),
-            prefix = ${ann.getOrElse("prefix", rdfProps("prefix"))},
-            localPart = ${ann("localPart")}
+          dt.QName(
+            namespace = dt.Namespace(dt.Uri(${ann.getOrElse("namespaceUri", rdfProps("namespaceUri"))})),
+            prefix = dt.Prefix(${ann.getOrElse("prefix", rdfProps("prefix"))}),
+            localName = dt.LocalName(${ann("localPart")})
           ), sb.${resOpsName}[${argType}].seq(i.${TermName(pn)})
         )"""
     }
@@ -230,12 +234,12 @@ object BuilderMacro {
     val allProperties = (implicits ++ localProperties).reduce((a, b) => q"$a ++ $b")
 
     c.Expr[SB#PropertyWomble[I]] {
-      q"""def womble[SB <: ${sbTpe} with ${sbol2BaseTpe}](sb: SB): sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}] =
+      q"""def womble[SB <: ${sbTpe} with ${relationsOpsTpe}](sb: SB): sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}] =
            new sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]
            {
-           def asProperties[DT <: ${datatreeTpe} with ${relationsTpe}]
+           def asProperties[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe]
              (dt: DT, i: sb.${tlTpe.typeSymbol.name.toTypeName})
-             (implicit implicits: sb.ToImplicits[dt.URI, dt.Name, dt.PropertyValue])
+             (implicit implicits: sb.ToImplicits[dt.Uri, dt.QName, dt.PropertyValue])
              : Seq[dt.NamedProperty] =
              {
                import implicits._
@@ -245,10 +249,10 @@ object BuilderMacro {
                ${allProperties}
              }
 
-            def readProperty[DT <: ${datatreeTpe} with ${relationsTpe}, T]
+            def readProperty[DT <: $datatreeTpe with $webOpsTpe with ${relationsOpsTpe}, T]
             (dt: DT)
             (doc: dt.Document, propName: String)
-            (implicit implicits: sb.FromImplicits[dt.URI, dt.Name, dt.PropertyValue]): T = {
+            (implicit implicits: sb.FromImplicits[dt.Uri, dt.QName, dt.PropertyValue]): T = {
               ???
             }
 

@@ -1,6 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.cake.{Relations, ScalaRelations}
+import uk.co.turingatemyhamster.relations.{Relations, RelationsOpsScalaImpl}
 
 
 /**
@@ -8,14 +8,7 @@ import uk.co.turingatemyhamster.cake.{Relations, ScalaRelations}
  *
  * @author Matthew Pocock
  */
-trait ScalaBase extends SBOL2Base {
-  importedPackages : Relations =>
+trait ScalaBase extends SBOL2Base with RelationsOpsScalaImpl {
 
-  override type URI = java.net.URI
-  override type QName = javax.xml.namespace.QName
   override type Timestamp = java.util.Date
-
-  override implicit def identifierOps = new UriOps {
-    override def idString(id: URI) = id.toString
-  }
 }

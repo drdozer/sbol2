@@ -1,15 +1,15 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.cake.Relations
+import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.Datatree
 
 /**
  * Created by caroline on 23/08/2014.
  */
 trait SBOL2Component_Sequence extends SBOL2Base {
-  importedPackages : SBOL2Component =>
+  importedPackages : RelationsOps with SBOL2Component =>
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "CutLocation")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "CutLocation")
   trait CutLocation extends Location {
     @RDFProperty(localPart = "after")
     def after: One[Int]
@@ -20,7 +20,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence with SBOL2Component, CutLocation](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "RangeLocation")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "RangeLocation")
   trait RangeLocation extends Location {
     @RDFProperty(localPart = "start")
     def start: One[Int]
@@ -33,7 +33,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence with SBOL2Component, RangeLocation](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Oriented")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Oriented")
   trait Oriented {
     @RDFProperty(localPart = "orientation")
     def orientation: One[Orientation]
@@ -44,9 +44,9 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence, Oriented](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "MultiRange")
-  case class MultiRange(identity: One[URI],
-                        persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "MultiRange")
+  case class MultiRange(identity: One[Uri],
+                        persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                         version: ZeroOne[String] = ZeroOne(),
                         timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                         annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -73,9 +73,9 @@ trait SBOL2Component_Sequence extends SBOL2Base {
     }
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Cut")
-  case class Cut(identity: One[URI],
-                 persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Cut")
+  case class Cut(identity: One[Uri],
+                 persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                  version: ZeroOne[String] = ZeroOne(),
                  timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                  annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -87,9 +87,9 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence, Cut](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "OrientedCut")
-  case class OrientedCut(identity: One[URI],
-                         persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "OrientedCut")
+  case class OrientedCut(identity: One[Uri],
+                         persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                          version: ZeroOne[String] = ZeroOne(),
                          timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                          annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -102,9 +102,9 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence, OrientedCut](importedPackages)
   }
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Range")
-  case class Range(identity: One[URI],
-                   persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Range")
+  case class Range(identity: One[Uri],
+                   persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                    version: ZeroOne[String] = ZeroOne(),
                    timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                    annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -118,9 +118,9 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   }
 
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "OrientedRange")
-  case class OrientedRange(identity: One[URI],
-                           persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "OrientedRange")
+  case class OrientedRange(identity: One[Uri],
+                           persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                            version: ZeroOne[String] = ZeroOne(),
                            timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                            annotations: ZeroMany[Annotation] = ZeroMany(),

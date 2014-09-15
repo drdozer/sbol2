@@ -1,6 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.cake.Relations
+import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.Datatree
 
 /**
@@ -9,11 +9,11 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * @author Matthew Pocock
  */
 trait SBOL2Collection extends SBOL2Base {
-  importedPackages =>
+  importedPackages : RelationsOps =>
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Collection")
-  case class Collection(identity: One[URI],
-                        persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Collection")
+  case class Collection(identity: One[Uri],
+                        persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                         version: ZeroOne[String] = ZeroOne(),
                         timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                         annotations: ZeroMany[Annotation] = ZeroMany(),

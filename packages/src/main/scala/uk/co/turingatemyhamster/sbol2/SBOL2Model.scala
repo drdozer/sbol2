@@ -1,6 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.cake.Relations
+import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.Datatree
 
 /**
@@ -9,11 +9,11 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * @author Matthew Pocock
  */
 trait SBOL2Model extends SBOL2Base {
-  importedPackages =>
+  importedPackages : RelationsOps =>
 
-  @RDFType(namespaceURI = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Model")
-  case class Model(identity: One[URI],
-                   persistentIdentity: ZeroOne[URI] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Model")
+  case class Model(identity: One[Uri],
+                   persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                    version: ZeroOne[String] = ZeroOne(),
                    timeStamp:ZeroOne[Timestamp] = ZeroOne(),
                    annotations: ZeroMany[Annotation] = ZeroMany(),
@@ -22,13 +22,13 @@ trait SBOL2Model extends SBOL2Base {
                    description: ZeroOne[String] = ZeroOne(),
 
                    @RDFProperty(localPart = "source")
-                   source: One[URI],
+                   source: One[Uri],
                    @RDFProperty(localPart = "language")
-                   language: One[URI],
+                   language: One[Uri],
                    @RDFProperty(localPart = "framework")
-                   framework: One[URI],
+                   framework: One[Uri],
                    @RDFProperty(localPart = "roles")
-                   role: OneMany[URI])
+                   role: OneMany[Uri])
     extends TopLevel
 
   object Model {

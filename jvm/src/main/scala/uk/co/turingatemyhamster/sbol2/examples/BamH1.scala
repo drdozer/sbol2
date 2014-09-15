@@ -2,11 +2,10 @@ package uk.co.turingatemyhamster.sbol2
 package examples
 
 import java.io.{StringReader, StringWriter}
-import java.net.URI
 import javax.xml.stream.{XMLInputFactory, XMLOutputFactory}
 
 import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter
-import uk.co.turingatemyhamster.datatree.{RdfIo, Datatree}
+import uk.co.turingatemyhamster.datatree.{RdfIo, Datatree, Datatrees}
 
 /**
  *
@@ -18,32 +17,32 @@ object BamH1 {
     import SBOL2._
 
     val bamH1_recognition_site = Structure(
-      identity = URI.create("http://example.com/library/BamHI_recognition_site/structure"),
+      identity = Uri("http://example.com/library/BamHI_recognition_site/structure"),
       displayId = Some("BamHI"),
       description = Some("BamHI recognition site"),
-      encoding = URI.create("someTerms:iupac-dna-nonambiguous"),
+      encoding = Uri("someTerms:iupac-dna-nonambiguous"),
       elements = "ggatcc"
     )
 
     val bamH1_recognition_site_component = Component(
-      identity = URI.create("http://example.com/library/BamHI_recognition_site/component"),
+      identity = Uri("http://example.com/library/BamHI_recognition_site/component"),
       displayId = Some("BamHI"),
       description = Some("BamHI recognition site"),
-      `type` = URI.create("someTerms:dna"),
-      roles = Seq(URI.create("so:restriction_endonuclease_binding_site")),
+      `type` = Uri("someTerms:dna"),
+      roles = Seq(Uri("so:restriction_endonuclease_binding_site")),
       structuralAnnotations = Seq(
         StructuralAnnotation(
-          identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut"),
+          identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut"),
           location = OrientedCut(
-            identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut/location"),
+            identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut/location"),
             after = 1,
             orientation = Inline
           )
         ),
         StructuralAnnotation(
-          identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut"),
+          identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut"),
           location = OrientedCut(
-            identity = URI.create("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut/location"),
+            identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut/location"),
             after = 5,
             orientation = ReverseComplement
           )
@@ -56,7 +55,18 @@ object BamH1 {
     println("SBOL2 data model")
     println(sbolDocument)
 
-    val dtree = DTIO.build(SBOL2, Datatree)(sbolDocument)
+
+    implicit def prefixs(pf: SBOL2.Prefix): Datatrees.Prefix = pf match { case SBOL2.Prefix(pf) => Datatrees.Prefix(pf) }
+    implicit def localNames(ln: SBOL2.LocalName): Datatrees.LocalName = ln match { case SBOL2.LocalName(ln) => Datatrees.LocalName(ln) }
+    implicit def namespaces(ns: SBOL2.Namespace): Datatrees.Namespace = ns match { case SBOL2.Namespace(ns) => Datatrees.Namespace(ns) }
+    implicit def uris(uri: SBOL2.Uri): Datatrees.Uri = Datatrees.Uri(uri.raw)
+    implicit def qnames(qname: SBOL2.QName): Datatrees.QName =
+      Datatrees.QName(
+        namespace = qname.namespace,
+        prefix = qname.prefix,
+        localName = qname.localName)
+
+    val dtree = DTIO.build(SBOL2, Datatrees)(sbolDocument)
 
     println("Datatree data model")
     println(dtree)
@@ -66,7 +76,7 @@ object BamH1 {
       XMLOutputFactory.newInstance.createXMLStreamWriter(
         writer))
 
-    RdfIo(Datatree).write(xmlWriter, dtree)
+    Datatrees.RDF.write(xmlWriter, dtree)
     val rdf = writer.toString
 
     println(rdf)
@@ -74,11 +84,11 @@ object BamH1 {
     val xmlReader = XMLInputFactory.newInstance.createXMLStreamReader(
       new StringReader(
         rdf))
-    val readDtree = RdfIo(Datatree).read(xmlReader)
+    val readDtree = Datatrees.RDF.read(xmlReader)
 
     println(readDtree)
 
-    val readSbolDocument = DTIO.build(SBOL2, Datatree)(readDtree)
+    val readSbolDocument = DTIO.build(SBOL2, Datatrees)(readDtree)
 
     println(readSbolDocument)
   }
