@@ -15,7 +15,7 @@ trait SBOL2Collection extends SBOL2Base {
   case class Collection(identity: One[Uri],
                         persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                         version: ZeroOne[String] = ZeroOne(),
-                        timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                        timestamp:ZeroOne[Timestamp] = ZeroOne(),
                         annotations: ZeroMany[Annotation] = ZeroMany(),
                         displayId: ZeroOne[String] = ZeroOne(),
                         name: ZeroOne[String] = ZeroOne(),

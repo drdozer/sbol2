@@ -40,10 +40,17 @@ object BuilderMacro {
         s"Could not find an RDFType annotation for ${tlTpe}. All objects converted to Datatree must be annotated with a type.")
     }
     val rdfProps = Map(rdfType.tree.children.tail map (t => t.children.head.toString() -> t.children.last) :_*)
-    println(rdfProps)
 
     val tlClass = tlTpe.typeSymbol.asClass
     val cstr = tlClass.primaryConstructor
+    val cstrParamNames = for
+    {
+      pl <- cstr.asMethod.paramLists
+      p <- pl
+    } yield {
+      p.name.toString
+    }
+
     val cstrParams = for
     {
       pl <- cstr.asMethod.paramLists
@@ -66,13 +73,28 @@ object BuilderMacro {
         val aArgType = aArg.typeSymbol.name.toTypeName
         tq"sb.$argTypeName[sb.${aArgType}]"
       }
-      q"""$p = propertyWomble.readProperty[DT, sb.${sig.typeSymbol}[${argType}]](dt)(tl, ${p.name.toString})"""
+
+      p.name.toString match {
+        case "identity" => q"""$p = sb.One(ph.mapIdentity(tl))"""
+        case "annotations" => q"""$p = sb.ZeroMany(propertyWomble.readAnnotations[DT](dt)(tl, propertyWomble.collectAllProperties(dt)) :_*)"""
+        case _ =>
+          sb.actualType.members.collectFirst { case m if m.name == argTypeName && !(m.asType.isAbstractType) => m } match {
+            case None =>
+              q"""$p = sb.${sig.typeSymbol.name.toTermName}(propertyWomble.readProperty[DT, ${argType}](dt).apply(tl, ${p.name.toString}) : _*)"""
+            case Some(m) if m.asClass.isSealed =>
+              val enum = q"sb.${argTypeName.toTermName}.enumStringMapping"
+              q"""$p = sb.${sig.typeSymbol.name.toTermName}(propertyWomble.readProperty[DT, ${argType}](dt)(implicits, enum($enum)).apply(tl, ${p.name.toString}) : _*)"""
+            case Some(m) =>
+              q"""$p = sb.${sig.typeSymbol.name.toTermName}(propertyWomble.readProperty[DT, ${argType}](dt)(implicits, ph.value2identified).apply(tl, ${p.name.toString}) : _*)"""
+          }
+      }
     }
 
     val expr = c.Expr[BT] {
       q"""def builder[SB <: ${sbTpe} with ${relationsOpsTpe}](sb: SB)
              (implicit propertyWomble: sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]) = new sb.${btTpe.typeSymbol}[sb.${tlTpe.typeSymbol.name.toTypeName}]
            {
+
              override def buildTo[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe]
              (dt: DT)
              (implicit implicits: sb.ToImplicits[dt.Uri, dt.QName, dt.PropertyValue])
@@ -99,15 +121,18 @@ object BuilderMacro {
              (implicit implicits: sb.FromImplicits[dt.Uri, dt.QName, dt.PropertyValue])
              : PartialFunction[dt.${TypeName(docType)}, sb.${tlTpe.typeSymbol.name.toTypeName}] =
              {
-               case tl if {println(tl.`type`); tl.`type` == dt.QName(
-                               namespace = dt.Namespace(dt.Uri(${rdfProps("namespaceUri")})),
-                               prefix = dt.Prefix(${rdfProps("prefix")}),
-                               localName = dt.LocalName(${rdfProps("localPart")}))} =>
-                 import implicits._
-                 val ph = sb.fromPropertyHelper(dt)(implicits)
-                 sb.${tlTpe.typeSymbol.name.toTermName}(
-                    ..$cstrParams
-                 )
+               val qName = dt.QName(namespace = dt.Namespace(dt.Uri(${rdfProps("namespaceUri")})),
+                                    prefix = dt.Prefix(${rdfProps("prefix")}),
+                                    localName = dt.LocalName(${rdfProps("localPart")}))
+
+               _ match {
+                 case tl if tl.`type` == qName =>
+                   import implicits._
+                   val ph = sb.fromPropertyHelper(dt)(implicits)
+                   sb.${tlTpe.typeSymbol.name.toTermName}(
+                      ..$cstrParams
+                   )
+               }
              }
            }
 
@@ -159,8 +184,7 @@ object BuilderMacro {
       !scalaType && !javaType
     }
 
-    val implicits = for((up, i) <- usefulParents.zipWithIndex) yield {
-      val implicit_i = "implicit_" + i
+    val lookupImplicits = for((up, i) <- usefulParents.zipWithIndex) yield {
       q"implicitly[sb.PropertyWomble[sb.${up.typeSymbol.name.toTypeName}]].asProperties(dt, i)"
     }
 
@@ -199,7 +223,7 @@ object BuilderMacro {
     }
 
 
-    val localProperties = withName map { case (pn, (accessor, ann)) =>
+    val localPropertyLookup = withName map { case (pn, (accessor, ann)) =>
       val resType = accessor.typeSignature.resultType
       val resTypeName = resType.typeSymbol.name.toString
       val resTypeNameL = resTypeName.substring(0, 1).toLowerCase + resTypeName.substring(1)
@@ -231,13 +255,52 @@ object BuilderMacro {
         )"""
     }
 
-    val allProperties = (implicits ++ localProperties).reduce((a, b) => q"$a ++ $b")
+    val allProperties = (lookupImplicits ++ localPropertyLookup).reduce((a, b) => q"$a ++ $b")
+
+    val localPropertyFetch = withName map { case (pn, (accessor, ann)) =>
+      cq"""(doc, $pn) =>
+         ph.fetchProperty(doc, dt.QName(
+           namespace = dt.Namespace(dt.Uri(${ann.getOrElse("namespaceUri", rdfProps("namespaceUri"))})),
+           prefix = dt.Prefix(${ann.getOrElse("prefix", rdfProps("prefix"))}),
+           localName = dt.LocalName(${ann.getOrElse("localPart", rdfProps("localPart"))})
+         ))
+       """
+    }
+
+    val fetch =
+      q"""
+          val lookup : PartialFunction[(dt.Document, String), Seq[T]] = { case ..$localPropertyFetch }
+          lookup
+       """
+
+    val fetchParentLookups = for(up <- usefulParents) yield {
+      q"implicitly[sb.PropertyWomble[sb.${up.typeSymbol.name.toTypeName}]].readProperty(dt)(implicits, tpv)"
+    }
+
+    val allFetch = (fetch +: fetchParentLookups).reduce((a, b) => q"$a orElse $b")
+
+    val collectParents = for(up <- usefulParents) yield {
+      q"implicitly[sb.PropertyWomble[sb.${up.typeSymbol.name.toTypeName}]].collectAllProperties(dt)"
+    }
+
+    val eachQName = withName map { case (pn, (accessor, ann)) =>
+        q"""
+            dt.QName(
+              namespace = dt.Namespace(dt.Uri(${ann.getOrElse("namespaceUri", rdfProps("namespaceUri"))})),
+              prefix = dt.Prefix(${ann.getOrElse("prefix", rdfProps("prefix"))}),
+              localName = dt.LocalName(${ann.getOrElse("localPart", rdfProps("localPart"))}))
+        """
+    }
+
+    val collectLocal = q"Set(..$eachQName)"
+
+    val collectAll = (collectParents :+ collectLocal).reduce((a, b) => q"$a ++ $b")
 
     c.Expr[SB#PropertyWomble[I]] {
       q"""def womble[SB <: ${sbTpe} with ${relationsOpsTpe}](sb: SB): sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}] =
            new sb.PropertyWomble[sb.${tlTpe.typeSymbol.name.toTypeName}]
            {
-           def asProperties[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe]
+           override def asProperties[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe]
              (dt: DT, i: sb.${tlTpe.typeSymbol.name.toTypeName})
              (implicit implicits: sb.ToImplicits[dt.Uri, dt.QName, dt.PropertyValue])
              : Seq[dt.NamedProperty] =
@@ -249,13 +312,20 @@ object BuilderMacro {
                ${allProperties}
              }
 
-            def readProperty[DT <: $datatreeTpe with $webOpsTpe with ${relationsOpsTpe}, T]
-            (dt: DT)
-            (doc: dt.Document, propName: String)
-            (implicit implicits: sb.FromImplicits[dt.Uri, dt.QName, dt.PropertyValue]): T = {
-              ???
+            override def readProperty[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe, T]
+            (dt: DT)(implicit implicits: sb.FromImplicits[dt.Uri, dt.QName, dt.PropertyValue], tpv: dt.PropertyValue => T)
+            : PartialFunction[(dt.Document, String), Seq[T]] = {
+              import implicits._
+              val ph = sb.fromPropertyHelper(dt)
+
+              $allFetch
             }
 
+            override def collectAllProperties[DT <: $datatreeTpe with $webOpsTpe with $relationsOpsTpe]
+            (dt: DT)
+            (implicit implicits: sb.FromImplicits[dt.Uri, dt.QName, dt.PropertyValue]): Set[dt.QName] = {
+              $collectAll
+            }
           }
 
            womble(${sb})

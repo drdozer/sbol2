@@ -13,7 +13,7 @@ trait SBOL2Module extends SBOL2Base {
   case class Module(identity: One[Uri],
                     persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                     version: ZeroOne[String] = ZeroOne(),
-                    timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                    timestamp:ZeroOne[Timestamp] = ZeroOne(),
                     annotations: ZeroMany[Annotation] = ZeroMany(),
                     displayId: ZeroOne[String] = ZeroOne(),
                     name: ZeroOne[String] = ZeroOne(),
@@ -40,7 +40,7 @@ trait SBOL2Module extends SBOL2Base {
   case class ModuleInstantiation(identity: One[Uri],
                                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                  version: ZeroOne[String] = ZeroOne(),
-                                 timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                                 timestamp:ZeroOne[Timestamp] = ZeroOne(),
                                  annotations: ZeroMany[Annotation] = ZeroMany(),
                                  displayId: ZeroOne[String] = ZeroOne(),
                                  name: ZeroOne[String] = ZeroOne(),
@@ -61,7 +61,7 @@ trait SBOL2Module extends SBOL2Base {
   case class Interaction(identity: One[Uri],
                          persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                          version: ZeroOne[String] = ZeroOne(),
-                         timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                         timestamp:ZeroOne[Timestamp] = ZeroOne(),
                          annotations: ZeroMany[Annotation] = ZeroMany(),
                          displayId: ZeroOne[String] = ZeroOne(),
                          name: ZeroOne[String] = ZeroOne(),
@@ -81,7 +81,7 @@ trait SBOL2Module extends SBOL2Base {
   case class Participation(identity: One[Uri],
                            persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                            version: ZeroOne[String] = ZeroOne(),
-                           timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                           timestamp:ZeroOne[Timestamp] = ZeroOne(),
                            annotations: ZeroMany[Annotation] = ZeroMany(),
 
                            @RDFProperty(localPart = "role")
@@ -98,7 +98,7 @@ trait SBOL2Module extends SBOL2Base {
   case class FunctionalInstantiation(identity: One[Uri],
                                      persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                      version: ZeroOne[String] = ZeroOne(),
-                                     timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                                     timestamp:ZeroOne[Timestamp] = ZeroOne(),
                                      annotations: ZeroMany[Annotation] = ZeroMany(),
                                      displayId: ZeroOne[String] = ZeroOne(),
                                      name: ZeroOne[String] = ZeroOne(),
@@ -123,12 +123,19 @@ trait SBOL2Module extends SBOL2Base {
   case object None extends Direction
 
   object Direction {
-    implicit val enumToString: EnumToString[Direction] = new EnumToString[Direction] {
+    implicit val enumStringMapping: EnumStringMapping[Direction] = new EnumStringMapping[Direction] {
       override def toString(d: Direction) = d match {
         case Input => "input"
         case Output => "output"
         case InOut => "in_out"
         case None => "none"
+      }
+
+      override def fromString(s: String) = s match {
+        case "input" => Input
+        case "output" => Output
+        case "in_out" => InOut
+        case "none" => None
       }
     }
   }

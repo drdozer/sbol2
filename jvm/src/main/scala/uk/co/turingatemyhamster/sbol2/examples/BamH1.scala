@@ -57,11 +57,20 @@ object BamH1 {
 
 
     implicit def prefixs(pf: SBOL2.Prefix): Datatrees.Prefix = pf match { case SBOL2.Prefix(pf) => Datatrees.Prefix(pf) }
+    implicit def sxiferp(pf: Datatrees.Prefix): SBOL2.Prefix = pf match { case Datatrees.Prefix(pf) => SBOL2.Prefix(pf) }
     implicit def localNames(ln: SBOL2.LocalName): Datatrees.LocalName = ln match { case SBOL2.LocalName(ln) => Datatrees.LocalName(ln) }
+    implicit def semanLocol(ln: Datatrees.LocalName): SBOL2.LocalName = ln match { case Datatrees.LocalName(ln) => SBOL2.LocalName(ln) }
     implicit def namespaces(ns: SBOL2.Namespace): Datatrees.Namespace = ns match { case SBOL2.Namespace(ns) => Datatrees.Namespace(ns) }
+    implicit def secapseman(ns: Datatrees.Namespace): SBOL2.Namespace = ns match { case Datatrees.Namespace(ns) => SBOL2.Namespace(ns) }
     implicit def uris(uri: SBOL2.Uri): Datatrees.Uri = Datatrees.Uri(uri.raw)
+    implicit def siru(uri: Datatrees.Uri): SBOL2.Uri = SBOL2.Uri(uri.raw)
     implicit def qnames(qname: SBOL2.QName): Datatrees.QName =
       Datatrees.QName(
+        namespace = qname.namespace,
+        prefix = qname.prefix,
+        localName = qname.localName)
+    implicit def semanq(qname: Datatrees.QName): SBOL2.QName =
+      SBOL2.QName(
         namespace = qname.namespace,
         prefix = qname.prefix,
         localName = qname.localName)

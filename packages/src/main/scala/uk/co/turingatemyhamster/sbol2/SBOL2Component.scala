@@ -15,7 +15,7 @@ trait SBOL2Component extends SBOL2Base {
   case class Component(identity: One[Uri],
                        persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                        version: ZeroOne[String] = ZeroOne(),
-                       timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                       timestamp:ZeroOne[Timestamp] = ZeroOne(),
                        annotations: ZeroMany[Annotation] = ZeroMany(),
                        displayId: ZeroOne[String] = ZeroOne(),
                        name: ZeroOne[String] = ZeroOne(),
@@ -44,7 +44,7 @@ trait SBOL2Component extends SBOL2Base {
   case class Structure(identity: One[Uri],
                        persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                        version: ZeroOne[String] = ZeroOne(),
-                       timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                       timestamp:ZeroOne[Timestamp] = ZeroOne(),
                        annotations: ZeroMany[Annotation] = ZeroMany(),
                        displayId: ZeroOne[String] = ZeroOne(),
                        name: ZeroOne[String] = ZeroOne(),
@@ -80,7 +80,7 @@ trait SBOL2Component extends SBOL2Base {
   case class StructuralInstantiation(identity: One[Uri],
                                      persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                      version: ZeroOne[String] = ZeroOne(),
-                                     timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                                     timestamp:ZeroOne[Timestamp] = ZeroOne(),
                                      annotations: ZeroMany[Annotation] = ZeroMany(),
                                      displayId: ZeroOne[String] = ZeroOne(),
                                      name: ZeroOne[String] = ZeroOne(),
@@ -100,10 +100,15 @@ trait SBOL2Component extends SBOL2Base {
   case object Private extends AccessModifier
 
   object AccessModifier {
-    implicit val enumToString: EnumToString[AccessModifier] = new EnumToString[AccessModifier] {
+    implicit val enumStringMapping: EnumStringMapping[AccessModifier] = new EnumStringMapping[AccessModifier] {
       override def toString(am: AccessModifier) = am match {
         case Public => "public"
         case Private => "private"
+      }
+
+      override def fromString(s: String) = s match {
+        case "public" => Public
+        case "private" => Private
       }
     }
   }
@@ -112,7 +117,7 @@ trait SBOL2Component extends SBOL2Base {
   case class RefersTo(identity: One[Uri],
                       persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                       version: ZeroOne[String] = ZeroOne(),
-                      timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                      timestamp:ZeroOne[Timestamp] = ZeroOne(),
                       annotations: ZeroMany[Annotation] = ZeroMany(),
 
                       @RDFProperty(localPart = "refinement")
@@ -135,12 +140,19 @@ trait SBOL2Component extends SBOL2Base {
   case object Merge extends Refinement
 
   object Refinement {
-    implicit val enumToString: EnumToString[Refinement] = new EnumToString[Refinement] {
+    implicit val enumStringMapping: EnumStringMapping[Refinement] = new EnumStringMapping[Refinement] {
       override def toString(r: Refinement) = r match {
         case VerifyIdentical => "verify_identical"
         case UseLocal => "use_local"
         case UseRemote => "use_remote"
         case Merge => "merge"
+      }
+
+      override def fromString(s: String) = s match {
+        case "verify_identical" => VerifyIdentical
+        case "use_local" => UseLocal
+        case "use_remote" => UseRemote
+        case "merge" => Merge
       }
     }
   }
@@ -149,7 +161,7 @@ trait SBOL2Component extends SBOL2Base {
   case class StructuralAnnotation(identity: One[Uri],
                                   persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                   version: ZeroOne[String] = ZeroOne(),
-                                  timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                                  timestamp:ZeroOne[Timestamp] = ZeroOne(),
                                   annotations: ZeroMany[Annotation] = ZeroMany(),
                                   displayId: ZeroOne[String] = ZeroOne(),
                                   name: ZeroOne[String] = ZeroOne(),
@@ -178,7 +190,7 @@ trait SBOL2Component extends SBOL2Base {
   case class StructuralConstraint(identity: One[Uri],
                                   persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                   version: ZeroOne[String] = ZeroOne(),
-                                  timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                                  timestamp:ZeroOne[Timestamp] = ZeroOne(),
                                   annotations: ZeroMany[Annotation] = ZeroMany(),
                                   displayId: ZeroOne[String] = ZeroOne(),
                                   name: ZeroOne[String] = ZeroOne(),
@@ -194,15 +206,15 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, StructuralConstraint](importedPackages)
   }
 
-  abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
-    super.topBuilders ++ Seq(
-      BuilderMacro.topBuilder[SBOL2Component, Component](importedPackages),
-      BuilderMacro.topBuilder[SBOL2Component, Structure](importedPackages))
-
   abstract override def nestedBuilders: Seq[NestedBuilder[Identified]] =
     super.nestedBuilders ++ Seq(
       BuilderMacro.nestedBuilder[SBOL2Component, StructuralInstantiation](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component, RefersTo](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component, StructuralAnnotation](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component, StructuralConstraint](importedPackages))
+
+  abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
+    super.topBuilders ++ Seq(
+      BuilderMacro.topBuilder[SBOL2Component, Component](importedPackages),
+      BuilderMacro.topBuilder[SBOL2Component, Structure](importedPackages))
 }

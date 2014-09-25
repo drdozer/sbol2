@@ -15,7 +15,7 @@ trait SBOL2Model extends SBOL2Base {
   case class Model(identity: One[Uri],
                    persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                    version: ZeroOne[String] = ZeroOne(),
-                   timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                   timestamp:ZeroOne[Timestamp] = ZeroOne(),
                    annotations: ZeroMany[Annotation] = ZeroMany(),
                    displayId: ZeroOne[String] = ZeroOne(),
                    name: ZeroOne[String] = ZeroOne(),
@@ -38,5 +38,4 @@ trait SBOL2Model extends SBOL2Base {
 
   abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
     super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Model, Model](importedPackages))
-
 }

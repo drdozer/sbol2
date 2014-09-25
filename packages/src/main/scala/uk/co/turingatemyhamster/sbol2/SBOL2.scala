@@ -9,6 +9,7 @@ import uk.co.turingatemyhamster.relations.{RelationsOpsScalaImpl}
  * @author Matthew Pocock
  */
 object SBOL2 extends SBOL2Base
+with SBOL2BaseOps
 with WebOpsImpl
 with RelationsOpsScalaImpl
 with SBOL2Collection

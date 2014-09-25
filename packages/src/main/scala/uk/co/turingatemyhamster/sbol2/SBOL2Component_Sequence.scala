@@ -48,7 +48,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   case class MultiRange(identity: One[Uri],
                         persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                         version: ZeroOne[String] = ZeroOne(),
-                        timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                        timestamp:ZeroOne[Timestamp] = ZeroOne(),
                         annotations: ZeroMany[Annotation] = ZeroMany(),
 
                         @RDFProperty(localPart = "range")
@@ -65,10 +65,15 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   case object ReverseComplement extends Orientation
 
   object Orientation {
-    implicit val enumToString: EnumToString[Orientation] = new EnumToString[Orientation] {
+    implicit val enumStringMapping: EnumStringMapping[Orientation] = new EnumStringMapping[Orientation] {
       override def toString(o: Orientation) = o match {
         case Inline => "inline"
         case ReverseComplement => "reverse_complement"
+      }
+
+      override def fromString(s: String): Orientation = s match {
+        case "inline" => Inline
+        case "reverse_complement" => ReverseComplement
       }
     }
   }
@@ -77,7 +82,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   case class Cut(identity: One[Uri],
                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                  version: ZeroOne[String] = ZeroOne(),
-                 timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                 timestamp:ZeroOne[Timestamp] = ZeroOne(),
                  annotations: ZeroMany[Annotation] = ZeroMany(),
                  after: One[Int])
     extends CutLocation
@@ -91,7 +96,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   case class OrientedCut(identity: One[Uri],
                          persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                          version: ZeroOne[String] = ZeroOne(),
-                         timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                         timestamp:ZeroOne[Timestamp] = ZeroOne(),
                          annotations: ZeroMany[Annotation] = ZeroMany(),
                          after: One[Int],
                          orientation: One[Orientation])
@@ -106,7 +111,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   case class Range(identity: One[Uri],
                    persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                    version: ZeroOne[String] = ZeroOne(),
-                   timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                   timestamp:ZeroOne[Timestamp] = ZeroOne(),
                    annotations: ZeroMany[Annotation] = ZeroMany(),
                    start: One[Int],
                    end: One[Int])
@@ -122,7 +127,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   case class OrientedRange(identity: One[Uri],
                            persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                            version: ZeroOne[String] = ZeroOne(),
-                           timeStamp:ZeroOne[Timestamp] = ZeroOne(),
+                           timestamp:ZeroOne[Timestamp] = ZeroOne(),
                            annotations: ZeroMany[Annotation] = ZeroMany(),
                            start: One[Int],
                            end: One[Int],
@@ -142,5 +147,4 @@ trait SBOL2Component_Sequence extends SBOL2Base {
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, OrientedCut](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, Range](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, OrientedRange](importedPackages))
-
 }

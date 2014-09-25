@@ -52,7 +52,8 @@ object Build extends sbt.Build{
     in(file("packagesJvm")).
     dependsOn(baseJvm % "compile->compile;test->test").
     settings(sharedSettings:_*).
-    settings(sharedPackagesSettings:_*)
+    settings(sharedPackagesSettings:_*).
+    settings(scalacOptions ++= (Seq("-Ymacro-debug-verbose")))
 
   lazy val packagesJs = project.
     in(file("packagesJs")).

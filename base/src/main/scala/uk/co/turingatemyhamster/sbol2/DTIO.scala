@@ -2,20 +2,21 @@ package uk.co.turingatemyhamster.sbol2
 
 import uk.co.turingatemyhamster.web.{Web, WebOps}
 import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
-import uk.co.turingatemyhamster.datatree.{DatatreeBuilder, Datatree}
+import uk.co.turingatemyhamster.datatree.{Datatree}
 
 
 object DTIO {
   def build[S2 <: SBOL2Base with WebOps with RelationsOps,
   DT <: Datatree with WebOps with RelationsOps](s2: S2, dt: DT) = new Object {
+    val sbol2 = dt.NamespaceBinding(prefix = dt.Prefix("sbol2"), namespace = dt.Namespace(dt.Uri("http://sbols.org/sbolv2/")))
+    def bindings = Seq(sbol2)
+    def lookupBinding(pfx: String) = bindings.filter { b =>
+      import dt._
+      b.prefix == dt.Prefix(pfx) }.head
+
     def apply(sd: s2.SBOLDocument)(
       implicit i2uri: s2.Uri => dt.Uri, q2name: s2.QName => dt.QName): dt.DocumentRoot =
     {
-      val sbol2 = dt.NamespaceBinding(prefix = dt.Prefix("sbol2"), namespace = dt.Namespace(dt.Uri("http://sbol.org/v2#")))
-      def bindings = Seq(sbol2)
-      def lookupBinding(pfx: String) = bindings.filter { b =>
-        import dt._
-        b.prefix == dt.Prefix(pfx) }.head
 
       implicit val s2impl: s2.ToImplicits[dt.Uri, dt.QName, dt.PropertyValue] =
         new s2.ToImplicits[dt.Uri, dt.QName, dt.PropertyValue]
@@ -55,8 +56,23 @@ object DTIO {
         documents = dt.ZeroMany(documentsFor(sd) :_*))
     }
 
-    def apply(doc: dt.DocumentRoot): s2.SBOLDocument = {
+    def apply(doc: dt.DocumentRoot)(implicit i2uri: dt.Uri => s2.Uri, n2q: dt.QName => s2.QName): s2.SBOLDocument = {
       implicit val s2impl = new s2.FromImplicits[dt.Uri, dt.QName, dt.PropertyValue] {
+        def uri2uri: dt.Uri => s2.Uri = i2uri
+        def name2qname: dt.QName => s2.QName = n2q
+
+        override implicit def resolve: ((String, String)) => dt.QName = (prefix_localName: (String, String)) => {
+          import dt._
+          val nb = lookupBinding(prefix_localName._1)
+          nb.qName(prefix_localName._2)
+        }
+
+        implicit def value2uri: dt.PropertyValue => s2.Uri = { case dt.UriLiteral(uri) => uri }
+        implicit def value2string: dt.PropertyValue => String = { case dt.StringLiteral(s) => s }
+        implicit def value2integer: dt.PropertyValue => Int = { case dt.IntegerLiteral(i) => i }
+        implicit def value2double: dt.PropertyValue => Double = { case dt.DoubleLiteral(d) => d }
+        implicit def value2boolean: dt.PropertyValue => Boolean = { case dt.BooleanLiteral(b) => b }
+        implicit def value2timestamp: dt.PropertyValue => s2.Timestamp = { case dt.TypedLiteral(ts, "xsd:DateTime") => s2.Timestamp(ts) }
 
       }
 
