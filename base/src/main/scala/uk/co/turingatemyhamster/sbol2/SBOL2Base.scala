@@ -13,7 +13,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * @author Matthew Pocock
  */
 abstract class SBOL2Base extends Web with Relations {
-  importedPackages : RelationsOps =>
+  importedPackages : WebOps with RelationsOps =>
 
   /**
    * The abstract Timestamp type.
@@ -346,7 +346,7 @@ abstract class SBOL2Base extends Web with Relations {
       }
     }
 
-    implicit def value2identified[I <: Identified]: dt.PropertyValue => I = _ match {
+    implicit def value2identified[I]: dt.PropertyValue => I = _ match {
       case (nd : dt.NestedDocument) =>
         val iO = for {
           ndb <- nestedBuilders.map(_ buildFrom dt)
@@ -354,6 +354,8 @@ abstract class SBOL2Base extends Web with Relations {
         } yield i
 
         iO.headOption.getOrElse(throw new IllegalArgumentException("Could not parse nested document")).asInstanceOf[I]
+      case dt.UriLiteral(dt.Uri(uri)) =>
+        UriReference(Uri(uri)).asInstanceOf[I]
     }
   }
 
@@ -384,7 +386,7 @@ abstract class SBOL2Base extends Web with Relations {
 }
 
 trait SBOL2BaseOps extends SBOL2Base {
-  importedPackages : RelationsOps =>
+  importedPackages : WebOps with RelationsOps =>
 
   type Timestamp = java.util.Calendar
 

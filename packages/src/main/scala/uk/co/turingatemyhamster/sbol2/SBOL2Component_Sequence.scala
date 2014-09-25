@@ -1,5 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
+import uk.co.turingatemyhamster.web.WebOps
 import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.Datatree
 
@@ -7,7 +8,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * Created by caroline on 23/08/2014.
  */
 trait SBOL2Component_Sequence extends SBOL2Base {
-  importedPackages : RelationsOps with SBOL2Component =>
+  importedPackages : WebOps with RelationsOps with SBOL2Component =>
 
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "CutLocation")
   trait CutLocation extends Location {

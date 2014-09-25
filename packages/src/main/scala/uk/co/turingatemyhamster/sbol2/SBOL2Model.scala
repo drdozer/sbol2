@@ -1,5 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
+import uk.co.turingatemyhamster.web.WebOps
 import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.Datatree
 
@@ -9,7 +10,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
  * @author Matthew Pocock
  */
 trait SBOL2Model extends SBOL2Base {
-  importedPackages : RelationsOps =>
+  importedPackages : WebOps with RelationsOps =>
 
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Model")
   case class Model(identity: One[Uri],

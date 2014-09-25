@@ -1,5 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
+import uk.co.turingatemyhamster.web.WebOpsImpl
 import uk.co.turingatemyhamster.relations.{Relations, RelationsOpsScalaImpl}
 
 
@@ -8,7 +9,7 @@ import uk.co.turingatemyhamster.relations.{Relations, RelationsOpsScalaImpl}
  *
  * @author Matthew Pocock
  */
-trait ScalaBase extends SBOL2Base with RelationsOpsScalaImpl {
+trait ScalaBase extends SBOL2Base with WebOpsImpl with RelationsOpsScalaImpl {
 
   override type Timestamp = java.util.Date
 }
