@@ -53,7 +53,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
                         annotations: ZeroMany[Annotation] = ZeroMany(),
 
                         @RDFProperty(localPart = "range")
-                        ranges: TwoMany[Range])
+                        ranges: TwoMany[RangeLocation])
     extends Location
 
   object MultiRange {
