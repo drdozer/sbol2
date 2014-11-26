@@ -33,14 +33,14 @@ object Build extends Build {
   lazy val baseSettings = generalSettings
   lazy val packagesSettings = generalSettings
 
-  lazy val baseSharedSettings = Seq(
+  def baseSharedSettings = Seq(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "uk.co.turingatemyhamster" %%%! "datatree_shared" % "0.1.1"
     )
   )
 
-  lazy val basePlatformSettings = Seq(
+  def basePlatformSettings = Seq(
     libraryDependencies ++= Seq(
       "uk.co.turingatemyhamster" %%%! "datatree" % "0.1.1"
     )
