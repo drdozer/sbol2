@@ -9,7 +9,7 @@ object Build extends Build {
 
   val baseModule = XModule(id = "sbol2-base", baseDir = "base", defaultSettings = baseSettings)
 
-  lazy val base               = baseModule.project(baseJvm, baseJs).settings(packageBin in Compile := file(""))
+  lazy val base               = baseModule.project(baseJvm, baseJs)
   lazy val baseJvm            = baseModule.jvmProject(baseSharedJvm)
   lazy val baseJs             = baseModule.jsProject(baseSharedJs)
   lazy val baseSharedJvm      = baseModule.jvmShared().settings(baseSharedSettings : _*)
@@ -17,7 +17,7 @@ object Build extends Build {
 
   val packagesModule = XModule(id = "sbol2-packages", baseDir = "packages", defaultSettings = packagesSettings)
 
-  lazy val packages           = packagesModule.project(packagesJvm, packagesJs).settings(packageBin in Compile := file(""))
+  lazy val packages           = packagesModule.project(packagesJvm, packagesJs)
   lazy val packagesJvm        = packagesModule.jvmProject(baseJvm).dependsOn(baseJvm)
   lazy val packagesJs         = packagesModule.jsProject(packagesSharedJs).dependsOn(baseJs)
   lazy val packagesSharedJvm  = packagesModule.jvmShared().dependsOn(baseSharedJvm)
