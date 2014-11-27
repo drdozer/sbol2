@@ -17,7 +17,7 @@ object BamH1 {
   def main(args: Array[String]): Unit = {
     import SBOL2._
 
-    val bamH1_recognition_site = Structure(
+    val bamH1_recognition_site = Sequence(
       identity = Uri("http://example.com/library/BamHI_recognition_site/structure"),
       displayId = Some("BamHI"),
       description = Some("BamHI recognition site"),
@@ -25,14 +25,14 @@ object BamH1 {
       elements = "ggatcc"
     )
 
-    val bamH1_recognition_site_component = Component(
+    val bamH1_recognition_site_component = ComponentDefinition(
       identity = Uri("http://example.com/library/BamHI_recognition_site/component"),
       displayId = Some("BamHI"),
       description = Some("BamHI recognition site"),
       `type` = Uri("someTerms:dna"),
       roles = Seq(Uri("so:restriction_endonuclease_binding_site")),
-      structuralAnnotations = Seq(
-        StructuralAnnotation(
+      sequenceAnnotations = Seq(
+        SequenceAnnotation(
           identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut"),
           location = OrientedCut(
             identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut/location"),
@@ -40,7 +40,7 @@ object BamH1 {
             orientation = Inline
           )
         ),
-        StructuralAnnotation(
+        SequenceAnnotation(
           identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut"),
           location = OrientedCut(
             identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut/location"),

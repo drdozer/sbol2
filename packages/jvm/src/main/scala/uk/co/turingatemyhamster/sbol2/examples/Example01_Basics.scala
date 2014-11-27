@@ -17,13 +17,13 @@ object Example01_Basics {
   def main(args: Array[String]): Unit = {
     import SBOL2._
 
-    val myDNA = Component(
+    val myDNA = ComponentDefinition(
       identity = Uri("http://example.com/MyDnaComponent"),
       displayId = Some("MyDnaComponent"),
       name = Some("myDNA"),
       description = Some("This is a very simple example"),
-      `type` = Uri("chebi:DNA"),
-      roles = Seq(Uri("so:region")))
+      `type` = dna,
+      roles = Seq(region))
 
     val sbolDocument = SBOLDocument(Seq(myDNA))
 

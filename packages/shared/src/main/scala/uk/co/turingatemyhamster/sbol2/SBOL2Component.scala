@@ -12,6 +12,71 @@ import uk.co.turingatemyhamster.datatree.Datatree
 trait SBOL2Component extends SBOL2Base {
   importedPackages : WebOps with RelationsOps =>
 
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="ComponentDefinition")
+  case class ComponentDefinition(identity: One[Uri],
+                                 persistentIdentity: ZeroOne[Uri] = ZeroOne(),
+                                 version: ZeroOne[String] = ZeroOne(),
+                                 timestamp:ZeroOne[Timestamp] = ZeroOne(),
+                                 annotations: ZeroMany[Annotation] = ZeroMany(),
+                                 displayId: ZeroOne[String] = ZeroOne(),
+                                 name: ZeroOne[String] = ZeroOne(),
+                                 description: ZeroOne[String] = ZeroOne(),
+
+                                 @RDFProperty(localPart = "type")
+                                 `type`: One[Uri],
+                                 @RDFProperty(localPart = "roles")
+                                 roles: OneMany[Uri],
+                                 @RDFProperty(localPart = "sequenceAnnotation")
+                                 sequenceAnnotations: ZeroMany[SequenceAnnotation] = ZeroMany(),
+                                 @RDFProperty(localPart = "sequenceConstraint")
+                                 sequenceConstraints: ZeroMany[SequenceConstraint] = ZeroMany(),
+                                 @RDFProperty(localPart = "subComponent")
+                                 subComponents: ZeroMany[Component] = ZeroMany(),
+                                 @RDFProperty(localPart = "sequence")
+                                 structure: ZeroOne[UriReference[Sequence]] = ZeroOne())
+    extends TopLevel
+
+  object ComponentDefinition {
+    implicit val propertyWomble: PropertyWomble[ComponentDefinition] =
+      BuilderMacro.propertyWomble[SBOL2Component, ComponentDefinition](importedPackages)
+  }
+
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Sequence")
+  case class Sequence(identity: One[Uri],
+                      persistentIdentity: ZeroOne[Uri] = ZeroOne(),
+                      version: ZeroOne[String] = ZeroOne(),
+                      timestamp:ZeroOne[Timestamp] = ZeroOne(),
+                      annotations: ZeroMany[Annotation] = ZeroMany(),
+                      displayId: ZeroOne[String] = ZeroOne(),
+                      name: ZeroOne[String] = ZeroOne(),
+                      description: ZeroOne[String] = ZeroOne(),
+
+                      @RDFProperty(localPart = "elements")
+                      elements: One[String],
+                      @RDFProperty(localPart = "encoding")
+                      encoding: One[Uri])
+    extends TopLevel
+
+  object Sequence {
+    implicit val propertyWomble: PropertyWomble[Sequence] =
+      BuilderMacro.propertyWomble[SBOL2Component, Sequence](importedPackages)
+  }
+
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="ComponentInstance")
+  trait ComponentInstance extends Documented {
+    @RDFProperty(localPart = "access")
+    def access: One[AccessModifier]
+    @RDFProperty(localPart = "instantiatedComponent")
+    def instantiatedComponent: One[UriReference[ComponentDefinition]]
+    @RDFProperty(localPart = "reference")
+    def references: ZeroMany[MapsTo]
+  }
+
+  object ComponentInstance {
+    implicit val propertyWomble: PropertyWomble[ComponentInstance] =
+      BuilderMacro.propertyWomble[SBOL2Component, ComponentInstance](importedPackages)
+  }
+
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Component")
   case class Component(identity: One[Uri],
                        persistentIdentity: ZeroOne[Uri] = ZeroOne(),
@@ -21,79 +86,14 @@ trait SBOL2Component extends SBOL2Base {
                        displayId: ZeroOne[String] = ZeroOne(),
                        name: ZeroOne[String] = ZeroOne(),
                        description: ZeroOne[String] = ZeroOne(),
-
-                       @RDFProperty(localPart = "type")
-                       `type`: One[Uri],
-                       @RDFProperty(localPart = "roles")
-                       roles: OneMany[Uri],
-                       @RDFProperty(localPart = "structuralAnnotation")
-                       structuralAnnotations: ZeroMany[StructuralAnnotation] = ZeroMany(),
-                       @RDFProperty(localPart = "structuralConstraint")
-                       structuralConstraints: ZeroMany[StructuralConstraint] = ZeroMany(),
-                       @RDFProperty(localPart = "structuralInstantiation")
-                       structuralInstantiations: ZeroMany[StructuralInstantiation] = ZeroMany(),
-                       @RDFProperty(localPart = "structure")
-                       structure: ZeroOne[UriReference[Structure]] = ZeroOne())
-    extends TopLevel
+                       access: One[AccessModifier],
+                       instantiatedComponent: One[UriReference[ComponentDefinition]],
+                       references: ZeroMany[MapsTo] = ZeroMany())
+    extends ComponentInstance
 
   object Component {
     implicit val propertyWomble: PropertyWomble[Component] =
       BuilderMacro.propertyWomble[SBOL2Component, Component](importedPackages)
-  }
-
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Structure")
-  case class Structure(identity: One[Uri],
-                       persistentIdentity: ZeroOne[Uri] = ZeroOne(),
-                       version: ZeroOne[String] = ZeroOne(),
-                       timestamp:ZeroOne[Timestamp] = ZeroOne(),
-                       annotations: ZeroMany[Annotation] = ZeroMany(),
-                       displayId: ZeroOne[String] = ZeroOne(),
-                       name: ZeroOne[String] = ZeroOne(),
-                       description: ZeroOne[String] = ZeroOne(),
-
-                       @RDFProperty(localPart = "elements")
-                       elements: One[String],
-                       @RDFProperty(localPart = "encoding")
-                       encoding: One[Uri])
-    extends TopLevel
-
-  object Structure {
-    implicit val propertyWomble: PropertyWomble[Structure] =
-      BuilderMacro.propertyWomble[SBOL2Component, Structure](importedPackages)
-  }
-
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="ComponentInstantiation")
-  trait ComponentInstantiation extends Documented {
-    @RDFProperty(localPart = "access")
-    def access: One[AccessModifier]
-    @RDFProperty(localPart = "instantiatedComponent")
-    def instantiatedComponent: One[UriReference[Component]]
-    @RDFProperty(localPart = "reference")
-    def references: ZeroMany[RefersTo]
-  }
-
-  object ComponentInstantiation {
-    implicit val propertyWomble: PropertyWomble[ComponentInstantiation] =
-      BuilderMacro.propertyWomble[SBOL2Component, ComponentInstantiation](importedPackages)
-  }
-
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="StructuralInstantiation")
-  case class StructuralInstantiation(identity: One[Uri],
-                                     persistentIdentity: ZeroOne[Uri] = ZeroOne(),
-                                     version: ZeroOne[String] = ZeroOne(),
-                                     timestamp:ZeroOne[Timestamp] = ZeroOne(),
-                                     annotations: ZeroMany[Annotation] = ZeroMany(),
-                                     displayId: ZeroOne[String] = ZeroOne(),
-                                     name: ZeroOne[String] = ZeroOne(),
-                                     description: ZeroOne[String] = ZeroOne(),
-                                     access: One[AccessModifier],
-                                     instantiatedComponent: One[UriReference[Component]],
-                                     references: ZeroMany[RefersTo] = ZeroMany())
-    extends ComponentInstantiation
-
-  object StructuralInstantiation {
-    implicit val propertyWomble: PropertyWomble[StructuralInstantiation] =
-      BuilderMacro.propertyWomble[SBOL2Component, StructuralInstantiation](importedPackages)
   }
 
   sealed trait AccessModifier
@@ -114,24 +114,24 @@ trait SBOL2Component extends SBOL2Base {
     }
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="RefersTo")
-  case class RefersTo(identity: One[Uri],
-                      persistentIdentity: ZeroOne[Uri] = ZeroOne(),
-                      version: ZeroOne[String] = ZeroOne(),
-                      timestamp:ZeroOne[Timestamp] = ZeroOne(),
-                      annotations: ZeroMany[Annotation] = ZeroMany(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="MapsTo")
+  case class MapsTo(identity: One[Uri],
+                    persistentIdentity: ZeroOne[Uri] = ZeroOne(),
+                    version: ZeroOne[String] = ZeroOne(),
+                    timestamp:ZeroOne[Timestamp] = ZeroOne(),
+                    annotations: ZeroMany[Annotation] = ZeroMany(),
 
-                      @RDFProperty(localPart = "refinement")
-                      refinement: One[Refinement],
-                      @RDFProperty(localPart = "local")
-                      local: One[UriReference[ComponentInstantiation]],
-                      @RDFProperty(localPart = "remote")
-                      remote: One[UriReference[ComponentInstantiation]])
+                    @RDFProperty(localPart = "refinement")
+                    refinement: One[Refinement],
+                    @RDFProperty(localPart = "local")
+                    local: One[UriReference[ComponentInstance]],
+                    @RDFProperty(localPart = "remote")
+                    remote: One[UriReference[ComponentInstance]])
     extends Identified
 
-  object RefersTo {
-    implicit val propertyWomble: PropertyWomble[RefersTo] =
-      BuilderMacro.propertyWomble[SBOL2Component, RefersTo](importedPackages)
+  object MapsTo {
+    implicit val propertyWomble: PropertyWomble[MapsTo] =
+      BuilderMacro.propertyWomble[SBOL2Component, MapsTo](importedPackages)
   }
 
   sealed trait Refinement
@@ -158,25 +158,25 @@ trait SBOL2Component extends SBOL2Base {
     }
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="StructuralAnnotation")
-  case class StructuralAnnotation(identity: One[Uri],
-                                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
-                                  version: ZeroOne[String] = ZeroOne(),
-                                  timestamp:ZeroOne[Timestamp] = ZeroOne(),
-                                  annotations: ZeroMany[Annotation] = ZeroMany(),
-                                  displayId: ZeroOne[String] = ZeroOne(),
-                                  name: ZeroOne[String] = ZeroOne(),
-                                  description: ZeroOne[String] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="SequenceAnnotation")
+  case class SequenceAnnotation(identity: One[Uri],
+                                persistentIdentity: ZeroOne[Uri] = ZeroOne(),
+                                version: ZeroOne[String] = ZeroOne(),
+                                timestamp:ZeroOne[Timestamp] = ZeroOne(),
+                                annotations: ZeroMany[Annotation] = ZeroMany(),
+                                displayId: ZeroOne[String] = ZeroOne(),
+                                name: ZeroOne[String] = ZeroOne(),
+                                description: ZeroOne[String] = ZeroOne(),
 
-                                  @RDFProperty(localPart = "location")
-                                  location: One[Location],
-                                  @RDFProperty(localPart = "structuralInstantiation")
-                                  structuralInstantiation: ZeroOne[UriReference[ComponentInstantiation]] = ZeroOne())
+                                @RDFProperty(localPart = "location")
+                                location: One[Location],
+                                @RDFProperty(localPart = "component")
+                                component: ZeroOne[UriReference[Component]] = ZeroOne())
     extends Documented
 
-  object StructuralAnnotation {
-    implicit val propertyWomble: PropertyWomble[StructuralAnnotation] =
-      BuilderMacro.propertyWomble[SBOL2Component, StructuralAnnotation](importedPackages)
+  object SequenceAnnotation {
+    implicit val propertyWomble: PropertyWomble[SequenceAnnotation] =
+      BuilderMacro.propertyWomble[SBOL2Component, SequenceAnnotation](importedPackages)
   }
 
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Location")
@@ -187,35 +187,35 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, Location](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="StructuralConstraint")
-  case class StructuralConstraint(identity: One[Uri],
-                                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
-                                  version: ZeroOne[String] = ZeroOne(),
-                                  timestamp:ZeroOne[Timestamp] = ZeroOne(),
-                                  annotations: ZeroMany[Annotation] = ZeroMany(),
-                                  displayId: ZeroOne[String] = ZeroOne(),
-                                  name: ZeroOne[String] = ZeroOne(),
-                                  description: ZeroOne[String] = ZeroOne(),
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="SequenceConstraint")
+  case class SequenceConstraint(identity: One[Uri],
+                                persistentIdentity: ZeroOne[Uri] = ZeroOne(),
+                                version: ZeroOne[String] = ZeroOne(),
+                                timestamp:ZeroOne[Timestamp] = ZeroOne(),
+                                annotations: ZeroMany[Annotation] = ZeroMany(),
+                                displayId: ZeroOne[String] = ZeroOne(),
+                                name: ZeroOne[String] = ZeroOne(),
+                                description: ZeroOne[String] = ZeroOne(),
 
-                                  @RDFProperty(localPart = "restriction") restriction: One[Uri],
-                                  @RDFProperty(localPart = "subject") subject: One[UriReference[StructuralInstantiation]],
-                                  @RDFProperty(localPart = "object") `object`: One[UriReference[StructuralInstantiation]])
+                                @RDFProperty(localPart = "restriction") restriction: One[Uri],
+                                @RDFProperty(localPart = "subject") subject: One[UriReference[Component]],
+                                @RDFProperty(localPart = "object") `object`: One[UriReference[Component]])
     extends Documented
 
-  object StructuralConstraint {
-    implicit val propertyWomble: PropertyWomble[StructuralConstraint] =
-      BuilderMacro.propertyWomble[SBOL2Component, StructuralConstraint](importedPackages)
+  object SequenceConstraint {
+    implicit val propertyWomble: PropertyWomble[SequenceConstraint] =
+      BuilderMacro.propertyWomble[SBOL2Component, SequenceConstraint](importedPackages)
   }
 
   abstract override def nestedBuilders: Seq[NestedBuilder[Identified]] =
     super.nestedBuilders ++ Seq(
-      BuilderMacro.nestedBuilder[SBOL2Component, StructuralInstantiation](importedPackages),
-      BuilderMacro.nestedBuilder[SBOL2Component, RefersTo](importedPackages),
-      BuilderMacro.nestedBuilder[SBOL2Component, StructuralAnnotation](importedPackages),
-      BuilderMacro.nestedBuilder[SBOL2Component, StructuralConstraint](importedPackages))
+      BuilderMacro.nestedBuilder[SBOL2Component, Component](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Component, MapsTo](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Component, SequenceAnnotation](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Component, SequenceConstraint](importedPackages))
 
   abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
     super.topBuilders ++ Seq(
-      BuilderMacro.topBuilder[SBOL2Component, Component](importedPackages),
-      BuilderMacro.topBuilder[SBOL2Component, Structure](importedPackages))
+      BuilderMacro.topBuilder[SBOL2Component, ComponentDefinition](importedPackages),
+      BuilderMacro.topBuilder[SBOL2Component, Sequence](importedPackages))
 }

@@ -9,8 +9,8 @@ import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 trait SBOL2Module extends SBOL2Base {
   importedPackages : WebOps with RelationsOps with SBOL2Component with SBOL2Model =>
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Module")
-  case class Module(identity: One[Uri],
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "ModuleDefinition")
+  case class ModuleDefinition(identity: One[Uri],
                     persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                     version: ZeroOne[String] = ZeroOne(),
                     timestamp:ZeroOne[Timestamp] = ZeroOne(),
@@ -21,23 +21,23 @@ trait SBOL2Module extends SBOL2Base {
 
                     @RDFProperty(localPart = "role")
                     roles: OneMany[Uri],
-                    @RDFProperty(localPart = "moduleInstantiation")
-                    moduleInstantiations: ZeroMany[ModuleInstantiation] = ZeroMany(),
+                    @RDFProperty(localPart = "subModule")
+                    subModule: ZeroMany[Module] = ZeroMany(),
                     @RDFProperty(localPart = "interaction")
                     interactions: ZeroMany[Interaction] = ZeroMany(),
-                    @RDFProperty(localPart = "functionalInstantiation")
-                    functionalInstantiations: ZeroMany[FunctionalInstantiation] = ZeroMany(),
+                    @RDFProperty(localPart = "functionalComponents")
+                    functionalComponents: ZeroMany[FunctionalComponent] = ZeroMany(),
                     @RDFProperty(localPart = "model")
                     models: ZeroMany[UriReference[Model]] = ZeroMany())
     extends TopLevel
 
-  object Module {
-    implicit val propertyWomble: PropertyWomble[Module] =
-      BuilderMacro.propertyWomble[SBOL2Module with SBOL2Model, Module](importedPackages)
+  object ModuleDefinition {
+    implicit val propertyWomble: PropertyWomble[ModuleDefinition] =
+      BuilderMacro.propertyWomble[SBOL2Module with SBOL2Model, ModuleDefinition](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "ModuleInstantiation")
-  case class ModuleInstantiation(identity: One[Uri],
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Module")
+  case class Module(identity: One[Uri],
                                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                  version: ZeroOne[String] = ZeroOne(),
                                  timestamp:ZeroOne[Timestamp] = ZeroOne(),
@@ -47,14 +47,14 @@ trait SBOL2Module extends SBOL2Base {
                                  description: ZeroOne[String] = ZeroOne(),
 
                                  @RDFProperty(localPart = "instantiatedModule")
-                                 instantiatedModule: One[UriReference[Module]],
+                                 instantiatedModule: One[UriReference[ModuleDefinition]],
                                  @RDFProperty(localPart = "reference")
-                                 references: ZeroMany[RefersTo])
+                                 references: ZeroMany[MapsTo])
     extends Documented
 
-  object ModuleInstantiation {
-    implicit val propertyWomble: PropertyWomble[ModuleInstantiation] =
-      BuilderMacro.propertyWomble[SBOL2Module with SBOL2Component, ModuleInstantiation](importedPackages)
+  object Module {
+    implicit val propertyWomble: PropertyWomble[Module] =
+      BuilderMacro.propertyWomble[SBOL2Module with SBOL2Component, Module](importedPackages)
   }
 
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Interaction")
@@ -87,15 +87,15 @@ trait SBOL2Module extends SBOL2Base {
                            @RDFProperty(localPart = "role")
                            roles: OneMany[Uri],
                            @RDFProperty(localPart = "participant")
-                           participant: One[UriReference[FunctionalInstantiation]])
+                           participant: One[UriReference[FunctionalComponent]])
     extends Identified
 
   object Participation {
     implicit val propertyWomble = BuilderMacro.propertyWomble[SBOL2Module, Participation](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "FunctionalInstantiation")
-  case class FunctionalInstantiation(identity: One[Uri],
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "ComponentInstantiation")
+  case class FunctionalComponent(identity: One[Uri],
                                      persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                      version: ZeroOne[String] = ZeroOne(),
                                      timestamp:ZeroOne[Timestamp] = ZeroOne(),
@@ -104,16 +104,16 @@ trait SBOL2Module extends SBOL2Base {
                                      name: ZeroOne[String] = ZeroOne(),
                                      description: ZeroOne[String] = ZeroOne(),
                                      access: One[AccessModifier],
-                                     instantiatedComponent: One[UriReference[Component]],
-                                     references: ZeroMany[RefersTo] = ZeroMany(),
+                                     instantiatedComponent: One[UriReference[ComponentDefinition]],
+                                     references: ZeroMany[MapsTo] = ZeroMany(),
 
                                      @RDFProperty(localPart = "direction")
                                      direction: One[Direction])
-    extends ComponentInstantiation
+    extends ComponentInstance
 
-  object FunctionalInstantiation {
-    implicit val propertyWomble: PropertyWomble[FunctionalInstantiation] =
-      BuilderMacro.propertyWomble[SBOL2Module with SBOL2Component, FunctionalInstantiation](importedPackages)
+  object FunctionalComponent {
+    implicit val propertyWomble: PropertyWomble[FunctionalComponent] =
+      BuilderMacro.propertyWomble[SBOL2Module with SBOL2Component, FunctionalComponent](importedPackages)
   }
 
   sealed trait Direction
@@ -143,12 +143,12 @@ trait SBOL2Module extends SBOL2Base {
 
   abstract override def nestedBuilders: Seq[NestedBuilder[Identified]] =
     super.nestedBuilders ++ Seq(
-      BuilderMacro.nestedBuilder[SBOL2Module with SBOL2Component, ModuleInstantiation](importedPackages),
+      BuilderMacro.nestedBuilder[SBOL2Module with SBOL2Component, Module](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Module, Interaction](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Module, Participation](importedPackages),
-      BuilderMacro.nestedBuilder[SBOL2Module with SBOL2Component, FunctionalInstantiation](importedPackages))
+      BuilderMacro.nestedBuilder[SBOL2Module with SBOL2Component, FunctionalComponent](importedPackages))
 
   abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
-    super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Module with SBOL2Model, Module](importedPackages))
+    super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Module with SBOL2Model, ModuleDefinition](importedPackages))
 
 }

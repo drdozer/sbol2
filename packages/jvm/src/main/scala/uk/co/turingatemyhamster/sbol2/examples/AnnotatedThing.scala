@@ -17,7 +17,7 @@ object AnnotatedThing {
   def main(args: Array[String]): Unit = {
     import SBOL2._
 
-    val myDNA = Component(
+    val myDNA = ComponentDefinition(
       identity = Uri("http://example.com/MyDnaComponent"),
       displayId = Some("MyDnaComponent"),
       name = Some("myDNA"),
