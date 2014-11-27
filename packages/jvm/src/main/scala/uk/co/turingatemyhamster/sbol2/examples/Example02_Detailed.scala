@@ -61,20 +61,24 @@ object Example02_Detailed {
     )
 
     val dnaComponent = {
-      val c1 = Component(
-                  identity = Uri("http://partsregistry.org/Part:BBa_I0462/subComponent/1234567"),
-                  access = Public,
-                  instantiatedComponent = dnaComponent1)
-      val c2 = Component(
-        identity = Uri("http://partsregistry.org/Part:BBa_I0462/subComponent/1234567"),
-                          access = Public,
-                          instantiatedComponent = dnaComponent2)
-      val c3 = Component(
-        identity = Uri("http://partsregistry.org/Part:BBa_I0462/subComponent/1234567"),
-                          access = Public,
-                          instantiatedComponent = dnaComponent3)
+      val baseUri = Uri("http://partsregistry.org/Part:BBa_I0462")
+      val c1 = SubComponent(
+        baseUri = baseUri,
+        displayId = "1234567",
+        access = Public,
+        instantiatedComponent = dnaComponent1)
+      val c2 = SubComponent(
+        baseUri = baseUri,
+        displayId = "2345678",
+        access = Public,
+        instantiatedComponent = dnaComponent2)
+      val c3 = SubComponent(
+        baseUri = baseUri,
+        displayId = "3456789",
+        access = Public,
+        instantiatedComponent = dnaComponent3)
       ComponentDefinition(
-        identity = Uri("http://partsregistry.org/Part:BBa_I0462"),
+        identity = baseUri,
         displayId = Some("BBa_I0462"),
         name = Some("I0462"),
         description = Some("LuxR protein generator"),

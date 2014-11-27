@@ -86,6 +86,7 @@ trait SBOL2Component extends SBOL2Base {
                        displayId: ZeroOne[String] = ZeroOne(),
                        name: ZeroOne[String] = ZeroOne(),
                        description: ZeroOne[String] = ZeroOne(),
+
                        access: One[AccessModifier],
                        instantiatedComponent: One[UriReference[ComponentDefinition]],
                        references: ZeroMany[MapsTo] = ZeroMany())

@@ -22,7 +22,7 @@ with SBOL2Module
 {
   implicit def toUriReference[I <: Identified](i: I): UriReference[I] = UriReference[I](i.identity)
 
-  def identifiersOrg(path: String): Uri = Uri(s"http://identifiers.org/path")
+  def identifiersOrg(path: String): Uri = Uri(s"http://identifiers.org/$path")
   def chebi(chebiId: String): Uri = identifiersOrg(s"chebi/CHEBI:$chebiId")
   def so(soId: String): Uri = identifiersOrg(s"so/SO:$soId")
   def go(goId: String): Uri = identifiersOrg(s"go/GO:$goId")
@@ -35,6 +35,8 @@ with SBOL2Module
 
   val region = so("0000110")
   val cds = so("0000316")
+  val promoter = so("0000167")
+  val terminator = so("0000141")
 
   val ligandRegulatedTF = go("0098531")
   val complex = go("0032991")
@@ -45,6 +47,17 @@ with SBOL2Module
   val binding = sbo("0000177")
   val reactant = sbo("0000010")
   val interactor = sbo("0000336")
+
+  val precedes = Uri("http://sbolstandard.org/constaints/precedes")
+
+  def SubComponent(baseUri: Uri,
+                   displayId: String,
+                   access: AccessModifier,
+                   instantiatedComponent: ComponentDefinition) = Component(
+    identity = Uri(baseUri.uriString + "/subComponent/" + displayId),
+    access = access,
+    instantiatedComponent = instantiatedComponent
+  )
 
   def FunctionalComponentOf(baseUri: Uri,
                             displayId: String,
