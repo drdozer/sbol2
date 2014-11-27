@@ -12,7 +12,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
 trait SBOL2Model extends SBOL2Base {
   importedPackages : WebOps with RelationsOps =>
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Model")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/model/", prefix="sbol2-model", localPart="Model")
   case class Model(identity: One[Uri],
                    persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                    version: ZeroOne[String] = ZeroOne(),
@@ -39,4 +39,8 @@ trait SBOL2Model extends SBOL2Base {
 
   abstract override def topBuilders: Seq[TopBuilder[TopLevel]] =
     super.topBuilders ++ Seq(BuilderMacro.topBuilder[SBOL2Model, Model](importedPackages))
+
+  abstract override def namespaceBindings = super.namespaceBindings ++ Seq(
+    NamespaceBinding(Namespace(Uri("http://sbols.org/sbolv2/model/")), Prefix("sbol2-model"))
+  )
 }

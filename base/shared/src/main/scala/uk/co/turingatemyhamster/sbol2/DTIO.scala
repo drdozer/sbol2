@@ -1,6 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.web.{Web, WebOps}
+import uk.co.turingatemyhamster.web.{Web2Web, Web, WebOps}
 import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.{Datatree}
 
@@ -8,11 +8,16 @@ import uk.co.turingatemyhamster.datatree.{Datatree}
 object DTIO {
   def build[S2 <: SBOL2Base with WebOps with RelationsOps,
   DT <: Datatree with WebOps with RelationsOps](s2: S2, dt: DT) = new Object {
-    val sbol2 = dt.NamespaceBinding(prefix = dt.Prefix("sbol2"), namespace = dt.Namespace(dt.Uri("http://sbols.org/sbolv2/")))
-    def bindings = Seq(sbol2)
-    def lookupBinding(pfx: String) = bindings.filter { b =>
-      import dt._
-      b.prefix == dt.Prefix(pfx) }.head
+    val bindings = {
+      val w2w = Web2Web(s2, dt)
+      s2.namespaceBindings map w2w.namespaceBinding12
+    }
+    def lookupBinding(pfx: String): dt.NamespaceBinding = {
+      val matches = bindings.collect { case nb@dt.NamespaceBinding(ns, dt.Prefix(p)) if p == pfx => nb }
+      matches.headOption getOrElse  {
+          throw new NoSuchElementException(s"No namespace binding registered for prefix $pfx in $bindings")
+      }
+    }
 
     def apply(sd: s2.SBOLDocument)(
       implicit i2uri: s2.Uri => dt.Uri, q2name: s2.QName => dt.QName): dt.DocumentRoot =

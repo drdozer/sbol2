@@ -10,7 +10,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
 trait SBOL2Component_Sequence extends SBOL2Base {
   importedPackages : WebOps with RelationsOps with SBOL2Component =>
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "CutLocation")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "CutLocation")
   trait CutLocation extends Location {
     @RDFProperty(localPart = "after")
     def after: One[Int]
@@ -21,7 +21,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence with SBOL2Component, CutLocation](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "RangeLocation")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "RangeLocation")
   trait RangeLocation extends Location {
     @RDFProperty(localPart = "start")
     def start: One[Int]
@@ -34,7 +34,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence with SBOL2Component, RangeLocation](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Oriented")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "Oriented")
   trait Oriented {
     @RDFProperty(localPart = "orientation")
     def orientation: One[Orientation]
@@ -45,7 +45,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence, Oriented](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "MultiRange")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "MultiRange")
   case class MultiRange(identity: One[Uri],
                         persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                         version: ZeroOne[String] = ZeroOne(),
@@ -79,7 +79,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
     }
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Cut")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "Cut")
   case class Cut(identity: One[Uri],
                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                  version: ZeroOne[String] = ZeroOne(),
@@ -93,7 +93,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence, Cut](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "OrientedCut")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "OrientedCut")
   case class OrientedCut(identity: One[Uri],
                          persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                          version: ZeroOne[String] = ZeroOne(),
@@ -108,7 +108,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
           BuilderMacro.propertyWomble[SBOL2Component_Sequence, OrientedCut](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Range")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "Range")
   case class Range(identity: One[Uri],
                    persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                    version: ZeroOne[String] = ZeroOne(),
@@ -124,7 +124,7 @@ trait SBOL2Component_Sequence extends SBOL2Base {
   }
 
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "OrientedRange")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component-sequence/", prefix="sbol2-component-sequence", localPart = "OrientedRange")
   case class OrientedRange(identity: One[Uri],
                            persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                            version: ZeroOne[String] = ZeroOne(),
@@ -148,4 +148,9 @@ trait SBOL2Component_Sequence extends SBOL2Base {
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, OrientedCut](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, Range](importedPackages),
       BuilderMacro.nestedBuilder[SBOL2Component_Sequence, OrientedRange](importedPackages))
+
+  abstract override def namespaceBindings = super.namespaceBindings ++ Seq(
+    NamespaceBinding(Namespace(Uri("http://sbols.org/sbolv2/component-sequence/")), Prefix("sbol2-component-sequence"))
+  )
+
 }

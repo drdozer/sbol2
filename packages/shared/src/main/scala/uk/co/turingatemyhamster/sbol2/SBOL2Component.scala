@@ -12,7 +12,7 @@ import uk.co.turingatemyhamster.datatree.Datatree
 trait SBOL2Component extends SBOL2Base {
   importedPackages : WebOps with RelationsOps =>
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="ComponentDefinition")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="ComponentDefinition")
   case class ComponentDefinition(identity: One[Uri],
                                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                  version: ZeroOne[String] = ZeroOne(),
@@ -24,7 +24,7 @@ trait SBOL2Component extends SBOL2Base {
 
                                  @RDFProperty(localPart = "type")
                                  `type`: One[Uri],
-                                 @RDFProperty(localPart = "roles")
+                                 @RDFProperty(localPart = "role")
                                  roles: OneMany[Uri],
                                  @RDFProperty(localPart = "sequenceAnnotation")
                                  sequenceAnnotations: ZeroMany[SequenceAnnotation] = ZeroMany(),
@@ -41,7 +41,7 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, ComponentDefinition](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Sequence")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="Sequence")
   case class Sequence(identity: One[Uri],
                       persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                       version: ZeroOne[String] = ZeroOne(),
@@ -62,7 +62,7 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, Sequence](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="ComponentInstance")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="ComponentInstance")
   trait ComponentInstance extends Documented {
     @RDFProperty(localPart = "access")
     def access: One[AccessModifier]
@@ -77,7 +77,7 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, ComponentInstance](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Component")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="Component")
   case class Component(identity: One[Uri],
                        persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                        version: ZeroOne[String] = ZeroOne(),
@@ -114,7 +114,7 @@ trait SBOL2Component extends SBOL2Base {
     }
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="MapsTo")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="MapsTo")
   case class MapsTo(identity: One[Uri],
                     persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                     version: ZeroOne[String] = ZeroOne(),
@@ -158,7 +158,7 @@ trait SBOL2Component extends SBOL2Base {
     }
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="SequenceAnnotation")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="SequenceAnnotation")
   case class SequenceAnnotation(identity: One[Uri],
                                 persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                 version: ZeroOne[String] = ZeroOne(),
@@ -179,7 +179,7 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, SequenceAnnotation](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="Location")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="Location")
   trait Location extends Identified
 
   object Location {
@@ -187,7 +187,7 @@ trait SBOL2Component extends SBOL2Base {
       BuilderMacro.propertyWomble[SBOL2Component, Location](importedPackages)
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix="sbol2", localPart="SequenceConstraint")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/component/", prefix="sbol2-component", localPart="SequenceConstraint")
   case class SequenceConstraint(identity: One[Uri],
                                 persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                 version: ZeroOne[String] = ZeroOne(),
@@ -218,4 +218,8 @@ trait SBOL2Component extends SBOL2Base {
     super.topBuilders ++ Seq(
       BuilderMacro.topBuilder[SBOL2Component, ComponentDefinition](importedPackages),
       BuilderMacro.topBuilder[SBOL2Component, Sequence](importedPackages))
+
+  abstract override def namespaceBindings = super.namespaceBindings ++ Seq(
+    NamespaceBinding(Namespace(Uri("http://sbols.org/sbolv2/component/")), Prefix("sbol2-component"))
+  )
 }

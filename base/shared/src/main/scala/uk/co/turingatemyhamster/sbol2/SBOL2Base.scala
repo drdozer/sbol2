@@ -30,7 +30,7 @@ abstract class SBOL2Base extends Web with Relations {
 
   case class UriReference[T](ref: Uri)
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Identified")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/core/", prefix = "sbol2-core", localPart = "Identified")
   trait Identified {
     @RDFSkip
     def identity: One[Uri]
@@ -76,7 +76,7 @@ abstract class SBOL2Base extends Web with Relations {
     type Value = String
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Documented")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/core/", prefix = "sbol2-core", localPart = "Documented")
   trait Documented extends Identified {
     @RDFProperty(localPart = "displayId")
     def displayId: ZeroOne[String]
@@ -86,7 +86,7 @@ abstract class SBOL2Base extends Web with Relations {
     def description: ZeroOne[String]
   }
 
-  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "TopLevel")
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/core/", prefix = "sbol2-core", localPart = "TopLevel")
   trait TopLevel extends Documented
 
   case class SBOLDocument(contents: ZeroMany[TopLevel] = ZeroMany())
@@ -102,10 +102,10 @@ abstract class SBOL2Base extends Web with Relations {
       (implicit implicits: ToImplicits[dt.Uri, dt.QName, dt.PropertyValue]): Seq[dt.NamedProperty] = {
         import implicits._
         val ph = toPropertyHelper(dt)
-        ph.asProperty("sbol2" -> "persistentIdentity", i.persistentIdentity.seq) ++
+        ph.asProperty("sbol2-core" -> "persistentIdentity", i.persistentIdentity.seq) ++
           ph.annotations(i.annotations.seq) ++
-          ph.asProperty("sbol2" -> "version", i.version.seq) ++
-          ph.asProperty("sbol2" -> "timestamp", i.timestamp.seq)
+          ph.asProperty("sbol2-core" -> "version", i.version.seq) ++
+          ph.asProperty("sbol2-core" -> "timestamp", i.timestamp.seq)
       }
 
       override def readProperty[DT <: Datatree with WebOps with RelationsOps, T]
@@ -116,11 +116,11 @@ abstract class SBOL2Base extends Web with Relations {
 
         {
           case (doc: dt.Document, "persistentIdentity") =>
-            ph.fetchProperty(doc, "sbol2" -> "persistentIdentity")
+            ph.fetchProperty(doc, "sbol2-core" -> "persistentIdentity")
           case (doc: dt.Document, "version") =>
-            ph.fetchProperty(doc, "sbol2" -> "version")
+            ph.fetchProperty(doc, "sbol2-core" -> "version")
           case (doc: dt.Document, "timestamp") =>
-            ph.fetchProperty(doc, "sbol2" -> "timestamp")
+            ph.fetchProperty(doc, "sbol2-core" -> "timestamp")
         }
       }
 
@@ -148,9 +148,9 @@ abstract class SBOL2Base extends Web with Relations {
         val ph = toPropertyHelper(dt)
 
         implicitly[PropertyWomble[Identified]].asProperties(dt, d) ++
-          ph.asProperty("sbol2" -> "displayId", d.displayId.seq) ++
-          ph.asProperty("sbol2" -> "name", d.name.seq) ++
-          ph.asProperty("sbol2" -> "description", d.description.seq)
+          ph.asProperty("sbol2-core" -> "displayId", d.displayId.seq) ++
+          ph.asProperty("sbol2-core" -> "name", d.name.seq) ++
+          ph.asProperty("sbol2-core" -> "description", d.description.seq)
       }
 
       override def readProperty[DT <: Datatree with WebOps with RelationsOps, T]
@@ -162,11 +162,11 @@ abstract class SBOL2Base extends Web with Relations {
         {
           val lookup: PartialFunction[(dt.Document, String), Seq[T]] = {
             case (doc: dt.Document, "displayId") =>
-              ph.fetchProperty(doc, "sbol2" -> "displayId")
+              ph.fetchProperty(doc, "sbol2-core" -> "displayId")
             case (doc: dt.Document, "name") =>
-              ph.fetchProperty(doc, "sbol2" -> "name")
+              ph.fetchProperty(doc, "sbol2-core" -> "name")
             case (doc: dt.Document, "description") =>
-              ph.fetchProperty(doc, "sbol2" -> "description")
+              ph.fetchProperty(doc, "sbol2-core" -> "description")
           }
           lookup
         } orElse implicitly[PropertyWomble[Identified]].readProperty(dt)
@@ -340,7 +340,8 @@ abstract class SBOL2Base extends Web with Relations {
         Annotation(
           relation = One(dt.oneOps.theOne(np.name) : QName),
           value = dt.oneOps.theOne(np.propertyValue) match {
-            case _ => ???
+            case x =>
+              throw new IllegalStateException(s"Unexpected annotatio with value: $x from $np")
           }
         )
       }
@@ -383,6 +384,10 @@ abstract class SBOL2Base extends Web with Relations {
 
   def topBuilders: Seq[TopBuilder[TopLevel]] = Seq()
 
+  def namespaceBindings: Seq[NamespaceBinding] = Seq(
+    NamespaceBinding(Namespace(Uri("http://sbols.org/sbolv2/")), Prefix("sbol2")),
+    NamespaceBinding(Namespace(Uri("http://sbols.org/sbolv2/core/")), Prefix("sbol2-core"))
+  )
 }
 
 trait SBOL2BaseOps extends SBOL2Base {
