@@ -34,18 +34,18 @@ object BamH1 {
       sequenceAnnotations = Seq(
         SequenceAnnotation(
           identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut"),
-          location = OrientedCut(
+          location = Cut(
             identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/top_strand_cut/location"),
             after = 1,
-            orientation = Inline
+            orientation = Some(Inline)
           )
         ),
         SequenceAnnotation(
           identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut"),
-          location = OrientedCut(
+          location = Cut(
             identity = Uri("http://example.com/library/BamHI_recognition_site/component/structuralAnnotation/bottom_strand_cut/location"),
             after = 5,
-            orientation = ReverseComplement
+            orientation = Some(ReverseComplement)
           )
         )
       )

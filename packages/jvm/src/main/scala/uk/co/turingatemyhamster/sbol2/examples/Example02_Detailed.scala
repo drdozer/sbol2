@@ -84,31 +84,31 @@ object Example02_Detailed {
         sequenceAnnotations = Seq(
           SequenceAnnotation(
             identity = Uri("http://partsregistry.org/Part:BBa_I0462/sequenceAnnotation/12345671234567"),
-            location = OrientedRange(
+            location = Range(
               identity = Uri("http://partsregistry.org/Part:BBa_I0462/sequenceAnnotation/1234567/location"),
               start = 1,
               end = 12,
-              orientation = Inline
+              orientation = Some(Inline)
             ),
             component = Some(c1)
           ),
           SequenceAnnotation(
             identity = Uri("http://partsregistry.org/Part:BBa_I0462/sequenceAnnotation/2345678"),
-            location = OrientedRange(
+            location = Range(
               identity = Uri("http://partsregistry.org/Part:BBa_I0462/sequenceAnnotation/location"),
               start = 19,
               end = 774,
-              orientation = Inline
+              orientation = Some(Inline)
             ),
             component = Some(c2)
           ),
           SequenceAnnotation(
             identity = Uri("http://partsregistry.org/Part:BBa_I0462/sequenceAnnotation/3456789"),
-            location = OrientedRange(
+            location = Range(
               identity = Uri("http://partsregistry.org/Part:BBa_I0462/sequenceAnnotation/3456789/location"),
               start = 808,
               end = 936,
-              orientation = Inline
+              orientation = Some(Inline)
             ),
             component = Some(c3)
           )
