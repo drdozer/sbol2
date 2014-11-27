@@ -44,22 +44,32 @@ trait SBOL2Component_Sequence extends SBOL2Base {
     }
   }
 
+  @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "OrientedLocation")
+  trait OrientedLocation extends Location {
+    @RDFProperty(localPart = "orientation")
+    def orientation: ZeroOne[Orientation]
+  }
+
+  object OrientedLocation {
+    implicit val propertyWomble: PropertyWomble[OrientedLocation] =
+          BuilderMacro.propertyWomble[SBOL2Component_Sequence with SBOL2Component, OrientedLocation](importedPackages)
+  }
+
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Cut")
   case class Cut(identity: One[Uri],
                  persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                  version: ZeroOne[String] = ZeroOne(),
                  timestamp:ZeroOne[Timestamp] = ZeroOne(),
                  annotations: ZeroMany[Annotation] = ZeroMany(),
+                 orientation: ZeroOne[Orientation],
 
                  @RDFProperty(localPart = "after")
-                 after: One[Int],
-                 @RDFProperty(localPart = "orientation")
-                 orientation: ZeroOne[Orientation])
-    extends Location
+                 after: One[Int])
+    extends OrientedLocation
 
   object Cut {
     implicit val propertyWomble: PropertyWomble[Cut] =
-          BuilderMacro.propertyWomble[SBOL2Component_Sequence with SBOL2Component, Cut](importedPackages)
+          BuilderMacro.propertyWomble[SBOL2Component_Sequence, Cut](importedPackages)
   }
 
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Range")
@@ -68,13 +78,13 @@ trait SBOL2Component_Sequence extends SBOL2Base {
                    version: ZeroOne[String] = ZeroOne(),
                    timestamp:ZeroOne[Timestamp] = ZeroOne(),
                    annotations: ZeroMany[Annotation] = ZeroMany(),
+                   orientation: ZeroOne[Orientation],
+
                    @RDFProperty(localPart = "start")
                    start: One[Int],
                    @RDFProperty(localPart = "end")
-                   end: One[Int],
-                   @RDFProperty(localPart = "orientation")
-                   orientation: ZeroOne[Orientation])
-    extends Location
+                   end: One[Int])
+    extends OrientedLocation
 
   object Range {
     implicit val propertyWomble: PropertyWomble[Range] =
