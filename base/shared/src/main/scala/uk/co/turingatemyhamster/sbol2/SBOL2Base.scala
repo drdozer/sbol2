@@ -15,6 +15,8 @@ import uk.co.turingatemyhamster.datatree.Datatree
 abstract class SBOL2Base extends Web with Relations {
   importedPackages : WebOps with RelationsOps =>
 
+  lazy val TheBNodeUri = Uri("_")
+
   /**
    * The abstract Timestamp type.
    *
@@ -74,6 +76,10 @@ abstract class SBOL2Base extends Web with Relations {
 
   case class TypedValue(value: String, xsdType: String) extends TurtleValue {
     type Value = String
+  }
+
+  case class NestedValue(value: Identified) extends TurtleValue {
+    type Value = Identified
   }
 
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Documented")
@@ -303,17 +309,21 @@ abstract class SBOL2Base extends Web with Relations {
             case BooleanValue(b) => b
             case UriValue(u) => u
             case TypedValue(v, t) => dt.TypedLiteral(v, t)
+            case NestedValue(d) => identified2Value(d)
           })
         )
       }
     }
 
-    def mapIdentity(i: Identified): dt.One[dt.Uri] =
-      dt.One(implicits.uri2uri(i.identity.theOne))
+    def mapIdentity(i: Identified): dt.ZeroOne[dt.Uri] =
+      i.identity.theOne match {
+        case TheBNodeUri => dt.ZeroOne()
+        case id => dt.ZeroOne(implicits.uri2uri(id))
+      }
 
     implicit def identified2Value[I <: Identified]: I => dt.PropertyValue = (i: Identified) => {
       val ndO = for {
-        ndb <- nestedBuilders.map(_ buildTo dt)
+        ndb <- nestedBuilders.map(_ buildTo dt).to[Stream]
         nd <- ndb.lift.apply(i)
       } yield nd
 
@@ -325,7 +335,7 @@ abstract class SBOL2Base extends Web with Relations {
   (dt: DT)
   (implicit implicits: FromImplicits[dt.Uri, dt.QName, dt.PropertyValue]) = new Object {
     def mapIdentity(d: dt.Document): Uri =
-      implicits.uri2uri(dt.oneOps.theOne(d.identity))
+      dt.zeroOneOps.seq(d.identity).headOption map implicits.uri2uri getOrElse TheBNodeUri
 
     def fetchProperty[T, Name]
     (d: dt.Document, name: Name)(implicit evN: Name => dt.QName, pvt: dt.PropertyValue => T): Seq[T] = {

@@ -19,6 +19,7 @@ with SBOL2Component
 with SBOL2Component_Sequence
 with SBOL2Model
 with SBOL2Module
+with SBOL2Generic
 {
   implicit def toUriReference[I <: Identified](i: I): UriReference[I] = UriReference[I](i.identity)
 
@@ -69,4 +70,16 @@ with SBOL2Module
     access = access,
     instantiatedComponent = instantiatedComponent,
     direction = direction)
+
+  implicit def idToTurtle(id: Identified): TurtleValue = NestedValue(id)
+  implicit def stringToTurtle(s: String): TurtleValue = StringValue(s)
+  implicit def booleanToTurtle(b: Boolean): TurtleValue = BooleanValue(b)
+
+  implicit class QNameExtras(val qname: QName) {
+    def := (tv: TurtleValue): Annotation = Annotation(relation = qname, value = tv)
+    def apply(as: Annotation*): StructuredAnnotation = StructuredAnnotation(
+      `type` = qname,
+      annotations = as
+    )
+  }
 }

@@ -79,9 +79,16 @@ object DTIO {
       import dt._
       def topLevelsFor(doc: dt.DocumentRoot) = for {
         tld <- doc.documents.seq
-        tlb <- s2.topBuilders
-        t <- tlb.buildFrom(dt).lift.apply(tld)
-      } yield t
+      } yield {
+        val ts = for {
+          tlb <- s2.topBuilders.to[Stream]
+          t <- tlb.buildFrom(dt).lift.apply(tld)
+        } yield t
+
+        ts.headOption getOrElse {
+          throw new IllegalArgumentException(s"Could not find top-level handler for ${tld.`type`}")
+        }
+      }
 
       s2.SBOLDocument(
         contents = s2.ZeroMany(topLevelsFor(doc) :_*)

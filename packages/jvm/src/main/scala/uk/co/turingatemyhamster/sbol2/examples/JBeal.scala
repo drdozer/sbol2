@@ -17,17 +17,46 @@ object JBeal {
   def main(args: Array[String]): Unit = {
     import SBOL2._
 
-//    val topLevel = TopLevelAnnotation(
-//      identity = URI("http://example.com/tla"),
-//      `type` =
-//    )
+    val grn = NamespaceBinding(Namespace(Uri("urn:bbn.com:tasbe:grn")), Prefix("grn"))
+    val grn_regulation = grn.qName("regulation")
+    val grn_RegulatoryReaction = grn.qName("RegulatoryReaction")
+    val grn_substrate = grn.qName("substrate")
+    val grn_ChemicalSpecies = grn.qName("ChemicalSpecies")
+    val grn_uid = grn.qName("uid")
+    val grn_regulatedBy = grn.qName("regulatedBy")
+    val grn_repression = grn.qName("repression")
+    val grn_design = grn.qName("design")
+    val grn_DataType = grn.qName("DataType")
+    val grn_logicalType = grn.qName("logicalType")
+    val grn_logicalValue = grn.qName("logicalValue")
+    val grn_property = grn.qName("property")
+    val grn_Family = grn.qName("Family")
+    val grn_name = grn.qName("name")
+    val grn_product = grn.qName("product")
 
     val part_1 = ComponentDefinition(
       identity = Uri("http://example/part_1"),
       displayId = Some("part_1"),
       name = Some("Promoter 1"),
       `type` = dna,
-      roles = Seq(promoter)
+      roles = Seq(promoter),
+      annotations = Seq(
+        grn_design := grn_DataType(
+          grn_logicalType := "boolean",
+          grn_logicalValue := "false"
+        ),
+        grn_regulation := grn_RegulatoryReaction(
+          grn_regulatedBy := grn_ChemicalSpecies(
+            grn_design := grn_DataType(
+              grn_repression := false,
+              grn_logicalType := "boolean"
+            ),
+            grn_property := grn_Family(
+              grn_name := "Echo"
+            )
+          )
+        )
+      )
     )
 
     val part_3 = ComponentDefinition(
@@ -35,7 +64,20 @@ object JBeal {
       displayId = Some("part_3"),
       name = Some("GFP CDS"),
       `type` = dna,
-      roles = Seq(cds)
+      roles = Seq(cds),
+      annotations = Seq(
+        grn_regulation := grn_RegulatoryReaction(
+          grn_product := grn_ChemicalSpecies(
+            grn_uid := "GFP",
+            grn_design := grn_DataType(
+              grn_logicalType := "boolean"
+            ),
+            grn_property := grn_Family(
+              grn_name := "GFP"
+            )
+          )
+        )
+      )
     )
 
     val part_5 = ComponentDefinition(
@@ -381,6 +423,31 @@ object JBeal {
     val geneticRegulatoryNetwork = Collection(
       identity = Uri("http://example/SHORT/col/GeneticRegulatoryNetwork"),
       displayId = Some("GeneticRegulatoryNetwork"),
+      annotations = Seq(
+        grn_regulation := grn_RegulatoryReaction(
+          grn_substrate := grn_ChemicalSpecies(
+            grn_uid := "LacI"
+          ),
+          grn_regulatedBy := grn_ChemicalSpecies(
+            grn_repression := true,
+            grn_uid := "IPTG",
+            grn_design := grn_DataType(
+              grn_logicalType := "boolean"
+            )
+          )
+        ),
+        grn_regulation := grn_RegulatoryReaction(
+          grn_substrate := grn_ChemicalSpecies(
+            grn_uid := "TetR"
+          ),
+          grn_regulatedBy := grn_ChemicalSpecies(
+            grn_repression := true,
+            grn_design := grn_DataType(
+              grn_logicalType := "boolean"
+            )
+          )
+        )
+      ),
       members = Seq(
         fu1,
         fu2,
