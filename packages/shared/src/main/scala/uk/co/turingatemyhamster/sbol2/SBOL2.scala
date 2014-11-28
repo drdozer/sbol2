@@ -74,6 +74,7 @@ with SBOL2Generic
   implicit def idToTurtle(id: Identified): TurtleValue = NestedValue(id)
   implicit def stringToTurtle(s: String): TurtleValue = StringValue(s)
   implicit def booleanToTurtle(b: Boolean): TurtleValue = BooleanValue(b)
+  implicit def uriToTurtle(uri: Uri): TurtleValue = UriValue(uri)
 
   implicit class QNameExtras(val qname: QName) {
     def := (tv: TurtleValue): Annotation = Annotation(relation = qname, value = tv)

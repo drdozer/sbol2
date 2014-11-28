@@ -120,7 +120,8 @@ object Example02_Detailed {
         subComponents = Seq(c1, c2, c3))
     }
 
-    val sbolDocument = SBOLDocument(Seq(dnaComponent, dnaStructure, dnaComponent1, dnaComponent2, dnaComponent3))
+    val sbolDocument = SBOLDocument(
+      contents = Seq(dnaComponent, dnaStructure, dnaComponent1, dnaComponent2, dnaComponent3))
 
     val dtree = {
       val w2w_sd = Web2Web(SBOL2, Datatrees)

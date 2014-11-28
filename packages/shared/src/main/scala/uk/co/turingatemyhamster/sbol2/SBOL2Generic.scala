@@ -53,7 +53,21 @@ trait SBOL2Generic extends SBOL2Base {
       }
 
       override def buildFrom[DT <: Datatree with WebOps with RelationsOps]
-      (dt: DT)(implicit implicits: FromImplicits[dt.Uri, dt.QName, dt.PropertyValue]) = ???
+      (dt: DT)(implicit implicits: FromImplicits[dt.Uri, dt.QName, dt.PropertyValue])
+      : PartialFunction[dt.NestedDocument, StructuredAnnotation] = {
+        case nd =>
+          import implicits._
+          val ph = fromPropertyHelper(dt)(implicits)
+          val womble = Identified.propertyWomble
+          StructuredAnnotation(
+            identity = One(ph.mapIdentity(nd)),
+            `type` = One(name2qname(dt.oneOps.theOne(nd.`type`))),
+            annotations = ZeroMany(womble.readAnnotations(dt)(nd, womble.collectAllProperties(dt)) : _*),
+            persistentIdentity = ZeroOne(womble.readProperty[DT, Uri](dt)(implicits, ph.value2identified).apply(nd -> "persistentIdentity") : _*),
+            version = ZeroOne(womble.readProperty[DT, String](dt).apply(nd -> "version") : _*),
+            timestamp = ZeroOne(womble.readProperty[DT, Timestamp](dt).apply(nd -> "timestamp") : _*)
+          )
+      }
     }
   }
 

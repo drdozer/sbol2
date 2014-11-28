@@ -1,7 +1,7 @@
 package uk.co.turingatemyhamster.sbol2.examples
 
-import java.io.StringWriter
-import javax.xml.stream.XMLOutputFactory
+import java.io.{StringReader, StringWriter}
+import javax.xml.stream.{XMLInputFactory, XMLOutputFactory}
 
 import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter
 import uk.co.turingatemyhamster.datatree.Datatrees
@@ -457,10 +457,12 @@ object JBeal {
       )
     )
 
-    val sbolDocument = SBOLDocument(Seq(
-      part_1, part_3, part_5, part_7, part_9, part_11, part_13, part_15, part_17, part_19, part_21, part_23, part_25, part_27, part_29, part_31,
-      fu1, fu2, fu3, fu4, fu5,
-      geneticRegulatoryNetwork))
+    val sbolDocument = SBOLDocument(
+      namespaceBindings = Seq(grn),
+      contents = Seq(
+        part_1, part_3, part_5, part_7, part_9, part_11, part_13, part_15, part_17, part_19, part_21, part_23, part_25, part_27, part_29, part_31,
+        fu1, fu2, fu3, fu4, fu5,
+        geneticRegulatoryNetwork))
 
 
     val dtree = {
@@ -479,5 +481,17 @@ object JBeal {
 
     println(rdf)
 
+    val xmlReader = XMLInputFactory.newInstance.createXMLStreamReader(
+      new StringReader(
+        rdf))
+    val readDtree = Datatrees.RDF.read(xmlReader)
+
+    val readSbolDocument = {
+      val w2w_ds = Web2Web(Datatrees, SBOL2)
+      import w2w_ds._
+      DTIO.build(SBOL2, Datatrees)(readDtree)
+    }
+
+    println(readSbolDocument)
   }
 }

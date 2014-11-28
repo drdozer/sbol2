@@ -95,7 +95,7 @@ abstract class SBOL2Base extends Web with Relations {
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "TopLevel")
   trait TopLevel extends Documented
 
-  case class SBOLDocument(contents: ZeroMany[TopLevel] = ZeroMany())
+  case class SBOLDocument(namespaceBindings: Seq[NamespaceBinding] = Seq(), contents: ZeroMany[TopLevel] = ZeroMany())
 
 
   // Companions. These should largely go away once we have macro generation of io boilerplate
@@ -349,9 +349,16 @@ abstract class SBOL2Base extends Web with Relations {
       for (np <- nps) yield {
         Annotation(
           relation = One(dt.oneOps.theOne(np.name) : QName),
-          value = dt.oneOps.theOne(np.propertyValue) match {
-            case _ => ???
-          }
+          value = One(dt.oneOps.theOne(np.propertyValue) match {
+            case dt.StringLiteral(s) =>
+              StringValue(s)
+            case dt.UriLiteral(uri) =>
+              UriValue(Uri(dt.uriOps.uriString(uri)))
+            case nd : dt.NestedDocument =>
+              NestedValue(value2identified(nd))
+            case v =>
+              throw new IllegalStateException(s"Unable to handle annotation value $v")
+          })
         )
       }
     }

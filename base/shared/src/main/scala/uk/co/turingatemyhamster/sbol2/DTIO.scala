@@ -1,6 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.web.{Web, WebOps}
+import uk.co.turingatemyhamster.web.{Web2Web, Web, WebOps}
 import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.{Datatree}
 
@@ -44,7 +44,10 @@ object DTIO {
       }
 
       import s2._
-      def bindingsFor(sd: s2.SBOLDocument) = bindings
+      def bindingsFor(sd: s2.SBOLDocument) = bindings ++ {
+        val w2w = Web2Web(s2, dt)
+        sd.namespaceBindings map w2w.namespaceBinding12
+      }
       def documentsFor(sd: s2.SBOLDocument) = for {
         tl <- sd.contents.seq
         tlb <- s2.topBuilders
