@@ -27,6 +27,46 @@ trait SBOL2Generic extends SBOL2Base {
                              `type`: One[QName]
                               ) extends TopLevel with ExplicitlyTyped
 
+  object GenericTopLevel {
+    val topBuilder: TopBuilder[GenericTopLevel] = new TopBuilder[GenericTopLevel] {
+      override def buildTo[DT <: Datatree with WebOps with RelationsOps]
+      (dt: DT)
+      (implicit implicits: ToImplicits[dt.Uri, dt.QName, dt.PropertyValue]):
+      PartialFunction[TopLevel, dt.TopLevelDocument] = {
+        case gtl : GenericTopLevel =>
+          import implicits._
+          val ph = toPropertyHelper(dt)(implicits)
+          dt.TopLevelDocument(
+            identity = ph.mapIdentity(gtl),
+            `type` = dt.One(qname2name(gtl.`type`.theOne)),
+            properties = dt.ZeroMany(
+              TopLevel.propertyWomble.asProperties(dt, gtl) : _*
+            )
+          )
+      }
+
+      override def buildFrom[DT <: Datatree with WebOps with RelationsOps]
+      (dt: DT)(implicit implicits: FromImplicits[dt.Uri, dt.QName, dt.PropertyValue]):
+      PartialFunction[dt.TopLevelDocument, GenericTopLevel] = {
+        case nd =>
+          import implicits._
+          val ph = fromPropertyHelper(dt)(implicits)
+          val womble = TopLevel.propertyWomble
+          GenericTopLevel(
+            identity = One(ph.mapIdentity(nd)),
+            `type` = One(name2qname(dt.oneOps.theOne(nd.`type`))),
+            annotations = ZeroMany(womble.readAnnotations(dt)(nd, womble.collectAllProperties(dt)) : _*),
+            persistentIdentity = ZeroOne(womble.readProperty[DT, Uri](dt)(implicits, ph.value2identified).apply(nd -> "persistentIdentity") : _*),
+            version = ZeroOne(womble.readProperty[DT, String](dt).apply(nd -> "version") : _*),
+            timestamp = ZeroOne(womble.readProperty[DT, Timestamp](dt).apply(nd -> "timestamp") : _*),
+            displayId = ZeroOne(womble.readProperty[DT, String](dt).apply(nd -> "displayId") : _*),
+            name = ZeroOne(womble.readProperty[DT, String](dt).apply(nd -> "name") : _*),
+            description = ZeroOne(womble.readProperty[DT, String](dt).apply(nd -> "description") : _*)
+          )
+      }
+    }
+  }
+
   case class StructuredAnnotation(identity: One[Uri] = One(TheBNodeUri), // fixme: bogus hack
                                persistentIdentity: ZeroOne[Uri] = ZeroOne(),
                                version: ZeroOne[String] = ZeroOne(),
@@ -73,4 +113,8 @@ trait SBOL2Generic extends SBOL2Base {
 
   override def nestedBuilders: Seq[NestedBuilder[Identified]] = super.nestedBuilders ++ Seq(
     StructuredAnnotation.nestedBuilder)
+
+  override def topBuilders: Seq[TopBuilder[TopLevel]] = super.topBuilders ++ Seq(
+    GenericTopLevel.topBuilder
+  )
 }

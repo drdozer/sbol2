@@ -50,9 +50,16 @@ object DTIO {
       }
       def documentsFor(sd: s2.SBOLDocument) = for {
         tl <- sd.contents.seq
-        tlb <- s2.topBuilders
-        t <- tlb.buildTo(dt).lift.apply(tl)
-      } yield t
+      } yield {
+        val ts = for {
+          tlb <- s2.topBuilders.to[Stream]
+          t <- tlb.buildTo(dt).lift.apply(tl)
+        } yield t
+
+        ts.headOption getOrElse {
+          throw new IllegalArgumentException("Could not find nested document handler for: " + tl)
+        }
+      }
 
       dt.DocumentRoot(
         bindings = dt.ZeroMany(bindingsFor(sd) :_*),
