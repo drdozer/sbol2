@@ -15,6 +15,8 @@ import uk.co.turingatemyhamster.datatree.Datatree
 abstract class SBOL2Base extends Web with Relations {
   importedPackages : WebOps with RelationsOps =>
 
+  lazy val TheBNodeUri = Uri("_")
+
   /**
    * The abstract Timestamp type.
    *
@@ -76,6 +78,10 @@ abstract class SBOL2Base extends Web with Relations {
     type Value = String
   }
 
+  case class NestedValue(value: Identified) extends TurtleValue {
+    type Value = Identified
+  }
+
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "Documented")
   trait Documented extends Identified {
     @RDFProperty(localPart = "displayId")
@@ -89,7 +95,7 @@ abstract class SBOL2Base extends Web with Relations {
   @RDFType(namespaceUri = "http://sbols.org/sbolv2/", prefix = "sbol2", localPart = "TopLevel")
   trait TopLevel extends Documented
 
-  case class SBOLDocument(contents: ZeroMany[TopLevel] = ZeroMany())
+  case class SBOLDocument(namespaceBindings: Seq[NamespaceBinding] = Seq(), contents: ZeroMany[TopLevel] = ZeroMany())
 
 
   // Companions. These should largely go away once we have macro generation of io boilerplate
@@ -303,17 +309,21 @@ abstract class SBOL2Base extends Web with Relations {
             case BooleanValue(b) => b
             case UriValue(u) => u
             case TypedValue(v, t) => dt.TypedLiteral(v, t)
+            case NestedValue(d) => identified2Value(d)
           })
         )
       }
     }
 
-    def mapIdentity(i: Identified): dt.One[dt.Uri] =
-      dt.One(implicits.uri2uri(i.identity.theOne))
+    def mapIdentity(i: Identified): dt.ZeroOne[dt.Uri] =
+      i.identity.theOne match {
+        case TheBNodeUri => dt.ZeroOne()
+        case id => dt.ZeroOne(implicits.uri2uri(id))
+      }
 
     implicit def identified2Value[I <: Identified]: I => dt.PropertyValue = (i: Identified) => {
       val ndO = for {
-        ndb <- nestedBuilders.map(_ buildTo dt)
+        ndb <- nestedBuilders.map(_ buildTo dt).to[Stream]
         nd <- ndb.lift.apply(i)
       } yield nd
 
@@ -325,7 +335,7 @@ abstract class SBOL2Base extends Web with Relations {
   (dt: DT)
   (implicit implicits: FromImplicits[dt.Uri, dt.QName, dt.PropertyValue]) = new Object {
     def mapIdentity(d: dt.Document): Uri =
-      implicits.uri2uri(dt.oneOps.theOne(d.identity))
+      dt.zeroOneOps.seq(d.identity).headOption map implicits.uri2uri getOrElse TheBNodeUri
 
     def fetchProperty[T, Name]
     (d: dt.Document, name: Name)(implicit evN: Name => dt.QName, pvt: dt.PropertyValue => T): Seq[T] = {
@@ -339,9 +349,16 @@ abstract class SBOL2Base extends Web with Relations {
       for (np <- nps) yield {
         Annotation(
           relation = One(dt.oneOps.theOne(np.name) : QName),
-          value = dt.oneOps.theOne(np.propertyValue) match {
-            case _ => ???
-          }
+          value = One(dt.oneOps.theOne(np.propertyValue) match {
+            case dt.StringLiteral(s) =>
+              StringValue(s)
+            case dt.UriLiteral(uri) =>
+              UriValue(Uri(dt.uriOps.uriString(uri)))
+            case nd : dt.NestedDocument =>
+              NestedValue(value2identified(nd))
+            case v =>
+              throw new IllegalStateException(s"Unable to handle annotation value $v")
+          })
         )
       }
     }

@@ -1,6 +1,6 @@
 package uk.co.turingatemyhamster.sbol2
 
-import uk.co.turingatemyhamster.web.{Web, WebOps}
+import uk.co.turingatemyhamster.web.{Web2Web, Web, WebOps}
 import uk.co.turingatemyhamster.relations.{Relations, RelationsOps}
 import uk.co.turingatemyhamster.datatree.{Datatree}
 
@@ -44,12 +44,22 @@ object DTIO {
       }
 
       import s2._
-      def bindingsFor(sd: s2.SBOLDocument) = bindings
+      def bindingsFor(sd: s2.SBOLDocument) = bindings ++ {
+        val w2w = Web2Web(s2, dt)
+        sd.namespaceBindings map w2w.namespaceBinding12
+      }
       def documentsFor(sd: s2.SBOLDocument) = for {
         tl <- sd.contents.seq
-        tlb <- s2.topBuilders
-        t <- tlb.buildTo(dt).lift.apply(tl)
-      } yield t
+      } yield {
+        val ts = for {
+          tlb <- s2.topBuilders.to[Stream]
+          t <- tlb.buildTo(dt).lift.apply(tl)
+        } yield t
+
+        ts.headOption getOrElse {
+          throw new IllegalArgumentException("Could not find nested document handler for: " + tl)
+        }
+      }
 
       dt.DocumentRoot(
         bindings = dt.ZeroMany(bindingsFor(sd) :_*),
@@ -79,9 +89,16 @@ object DTIO {
       import dt._
       def topLevelsFor(doc: dt.DocumentRoot) = for {
         tld <- doc.documents.seq
-        tlb <- s2.topBuilders
-        t <- tlb.buildFrom(dt).lift.apply(tld)
-      } yield t
+      } yield {
+        val ts = for {
+          tlb <- s2.topBuilders.to[Stream]
+          t <- tlb.buildFrom(dt).lift.apply(tld)
+        } yield t
+
+        ts.headOption getOrElse {
+          throw new IllegalArgumentException(s"Could not find top-level handler for ${tld.`type`}")
+        }
+      }
 
       s2.SBOLDocument(
         contents = s2.ZeroMany(topLevelsFor(doc) :_*)

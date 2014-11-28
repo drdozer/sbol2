@@ -51,7 +51,7 @@ object BamH1 {
       )
     )
 
-    val sbolDocument = SBOLDocument(Seq(bamH1_recognition_site, bamH1_recognition_site_component))
+    val sbolDocument = SBOLDocument(contents = Seq(bamH1_recognition_site, bamH1_recognition_site_component))
 
     println("SBOL2 data model")
     println(sbolDocument)

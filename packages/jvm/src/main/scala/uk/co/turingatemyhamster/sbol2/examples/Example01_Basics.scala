@@ -25,7 +25,7 @@ object Example01_Basics {
       `type` = dna,
       roles = Seq(region))
 
-    val sbolDocument = SBOLDocument(Seq(myDNA))
+    val sbolDocument = SBOLDocument(contents = Seq(myDNA))
 
     val dtree = {
       val w2w_sd = Web2Web(SBOL2, Datatrees)

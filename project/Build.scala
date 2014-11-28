@@ -36,19 +36,19 @@ object Build extends Build {
   def baseSharedSettings = Seq(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "uk.co.turingatemyhamster" %%%! "datatree_shared" % "0.1.1"
+      "uk.co.turingatemyhamster" %%%! "datatree_shared" % "0.1.2"
     )
   )
 
   def basePlatformJvmSettings = Seq(
     libraryDependencies ++= Seq(
-      "uk.co.turingatemyhamster" %% "datatree" % "0.1.1"
+      "uk.co.turingatemyhamster" %% "datatree" % "0.1.2"
     )
   )
 
   def basePlatformJsSettings = Seq(
     libraryDependencies ++= Seq(
-      "uk.co.turingatemyhamster" %%% "datatree" % "0.1.1"
+      "uk.co.turingatemyhamster" %%% "datatree" % "0.1.2"
     )
   )
 }

@@ -334,10 +334,11 @@ object ToggleSwitch {
       )
     }
 
-    val sbolDocument = SBOLDocument(Seq(
-      lacICds, lacIProtein, iptgMolecule, iptgLacIComplex,
-      tetRCds, tetRProtein, aTcMolecule, aTcTetRComplex,
-      lacI_Inverter_module, tetR_Inverter_module, toggle_switch_module))
+    val sbolDocument = SBOLDocument(
+      contents = Seq(
+        lacICds, lacIProtein, iptgMolecule, iptgLacIComplex,
+        tetRCds, tetRProtein, aTcMolecule, aTcTetRComplex,
+        lacI_Inverter_module, tetR_Inverter_module, toggle_switch_module))
 
     val dtree = {
       val w2w_sd = Web2Web(SBOL2, Datatrees)
