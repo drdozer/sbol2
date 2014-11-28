@@ -105,7 +105,7 @@ trait SBOL2Module extends SBOL2Base {
                                      description: ZeroOne[String] = ZeroOne(),
                                      access: One[AccessModifier],
                                      instantiatedComponent: One[UriReference[ComponentDefinition]],
-                                     references: ZeroMany[MapsTo] = ZeroMany(),
+                                     mappings: ZeroMany[MapsTo] = ZeroMany(),
 
                                      @RDFProperty(localPart = "direction")
                                      direction: One[Direction])
