@@ -21,7 +21,7 @@ object ToggleSwitch {
     )
 
     val lacIProtein = ComponentDefinition(
-      identity = Uri("http://example.com/design/lacI"),
+      identity = Uri("http://example.com/design/LacI"),
       name = Some("LacI Protein"),
       `type` = protein,
       roles = Seq(ligandRegulatedTF)
@@ -251,17 +251,17 @@ object ToggleSwitch {
             types = Seq(binding),
             participations = Seq(
               Participation(
-                identity = Uri("http://example.com/design/TetR_Inverter/module/interaction/aTc"),
+                identity = Uri("http://example.com/design/TetR_Inverter/module/interaction/aTcTetRBinding/aTc"),
                 roles = Seq(interactor),
                 participant = aTcM
               ),
               Participation(
-                identity = Uri("http://example.com/design/TetR_Inverter/module/interaction/TetR"),
+                identity = Uri("http://example.com/design/TetR_Inverter/module/interaction/aTcTetRBinding/TetR"),
                 roles = Seq(interactor),
                 participant = tetRP
               ),
               Participation(
-                identity = Uri("http://example.com/design/TetR_Inverter/module/interaction/aTcTetR"),
+                identity = Uri("http://example.com/design/TetR_Inverter/module/interaction/aTcTetRBinding/aTcTetR"),
                 roles = Seq(product),
                 participant = aTcTetRC
               )

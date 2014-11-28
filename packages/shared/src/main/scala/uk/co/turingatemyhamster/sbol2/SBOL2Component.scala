@@ -68,8 +68,8 @@ trait SBOL2Component extends SBOL2Base {
     def access: One[AccessModifier]
     @RDFProperty(localPart = "instantiatedComponent")
     def instantiatedComponent: One[UriReference[ComponentDefinition]]
-    @RDFProperty(localPart = "reference")
-    def references: ZeroMany[MapsTo]
+    @RDFProperty(localPart = "mapping")
+    def mappings: ZeroMany[MapsTo]
   }
 
   object ComponentInstance {
@@ -89,7 +89,7 @@ trait SBOL2Component extends SBOL2Base {
 
                        access: One[AccessModifier],
                        instantiatedComponent: One[UriReference[ComponentDefinition]],
-                       references: ZeroMany[MapsTo] = ZeroMany())
+                       mappings: ZeroMany[MapsTo] = ZeroMany())
     extends ComponentInstance
 
   object Component {
