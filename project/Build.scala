@@ -1,11 +1,16 @@
 import sbt._
-import Keys._
+import sbt.Keys._
 import com.inthenow.sbt.scalajs._
 import com.inthenow.sbt.scalajs.SbtScalajs._
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 import ScalaJSKeys._
+import bintray.Plugin._
+import org.eclipse.jgit.lib._
 
 object Build extends Build {
+  val logger = ConsoleLogger()
+  val baseVersion = "0.1.2"
+
 
   val baseModule = XModule(id = "sbol2-base", baseDir = "base", defaultSettings = baseSettings)
 
@@ -23,12 +28,21 @@ object Build extends Build {
   lazy val packagesSharedJvm    = packagesModule.jvmShared().dependsOn(baseSharedJvm)
   lazy val packagesSharedJs     = packagesModule.jsShared(packagesSharedJvm).dependsOn(baseSharedJs)
 
-  lazy val generalSettings = Seq(
+  lazy val generalSettings = bintrayPublishSettings ++ Seq(
     scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.11.4", "2.11.2"),
+    crossScalaVersions := Seq("2.11.4", "2.10.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     organization := "uk.co.turingatemyhamster",
-    version := "0.1.1")
+    version := makeVersion(baseVersion),
+    resolvers += Resolver.url(
+      "Drdozer Bintray Repo",
+      url("http://dl.bintray.com/content/drdozer/maven"))(
+      Resolver.ivyStylePatterns),
+    publishMavenStyle := false,
+//    bintray.Keys.repository in bintray.Keys.bintray := "sbt-plugins",
+    bintray.Keys.bintrayOrganization in bintray.Keys.bintray := None,
+    licenses +=("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+    )
 
   lazy val baseSettings = generalSettings
   lazy val packagesSettings = generalSettings
@@ -51,4 +65,31 @@ object Build extends Build {
       "uk.co.turingatemyhamster" %%% "datatree" % "0.1.2"
     )
   )
+
+  def fetchGitBranch(): String = {
+    val builder = new RepositoryBuilder()
+    builder.setGitDir(file(".git"))
+    val repo = builder.readEnvironment().findGitDir().build()
+    val gitBranch = repo.getBranch
+    logger.info(s"Git branch reported as: $gitBranch")
+    repo.close()
+    val travisBranch = Option(System.getenv("TRAVIS_BRANCH"))
+    logger.info(s"Travis branch reported as: $travisBranch")
+
+    val branch = (travisBranch getOrElse gitBranch) replaceAll ("/", "_")
+    logger.info(s"Computed branch is $branch")
+    branch
+  }
+
+  def makeVersion(baseVersion: String): String = {
+    val branch = fetchGitBranch()
+    if(branch == "main") {
+      baseVersion
+    } else {
+      val tjn = Option(System.getenv("TRAVIS_JOB_NUMBER"))
+      s"$branch-$baseVersion${
+        tjn.map("." + _) getOrElse ""
+      }"
+    }
+  }
 }
