@@ -35,6 +35,10 @@ object Build extends Build {
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     organization := "uk.co.turingatemyhamster",
     version := makeVersion(baseVersion),
+    resolvers += Resolver.url(
+      "scalajs Rep",
+      url("http://dl.bintray.com/content/scala-js/scala-js-releases"))(
+      Resolver.ivyStylePatterns),
     resolvers += "drdozer Bintray Repo" at "http://dl.bintray.com/content/drdozer/maven",
     publishMavenStyle := true,
     repository in bintray := "maven",
