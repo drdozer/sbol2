@@ -5,6 +5,7 @@ import com.inthenow.sbt.scalajs.SbtScalajs._
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 import ScalaJSKeys._
 import bintray.Plugin._
+import bintray.Keys._
 import org.eclipse.jgit.lib._
 
 object Build extends Build {
@@ -34,13 +35,11 @@ object Build extends Build {
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     organization := "uk.co.turingatemyhamster",
     version := makeVersion(baseVersion),
-    resolvers += Resolver.url(
-      "Drdozer Bintray Repo",
-      url("http://dl.bintray.com/content/drdozer/maven"))(
-      Resolver.ivyStylePatterns),
-    publishMavenStyle := false,
-//    bintray.Keys.repository in bintray.Keys.bintray := "sbt-plugins",
-    bintray.Keys.bintrayOrganization in bintray.Keys.bintray := None,
+    resolvers += "drdozer Bintray Repo" at "http://dl.bintray.com/content/drdozer/maven",
+    publishMavenStyle := true,
+    repository in bintray := "maven",
+    bintrayOrganization in bintray := None,
+    logLevel in bintray := Level.Debug,
     licenses +=("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
     )
 
