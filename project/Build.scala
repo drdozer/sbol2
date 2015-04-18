@@ -18,8 +18,8 @@ object Build extends Build {
   lazy val base                 = baseModule.project(basePlatformJvm, basePlatformJs)
   lazy val basePlatformJvm      = baseModule.jvmProject(baseSharedJvm).settings(basePlatformJvmSettings : _*)
   lazy val basePlatformJs       = baseModule.jsProject(baseSharedJs).settings(basePlatformJsSettings : _*)
-  lazy val baseSharedJvm        = baseModule.jvmShared().settings(baseSharedSettings : _*)
-  lazy val baseSharedJs         = baseModule.jsShared(baseSharedJvm).settings(baseSharedSettings : _*)
+  lazy val baseSharedJvm        = baseModule.jvmShared().settings(baseSharedJvmSettings : _*)
+  lazy val baseSharedJs         = baseModule.jsShared(baseSharedJvm).settings(baseSharedJsSettings : _*)
 
   val packagesModule = XModule(id = "sbol2-packages", baseDir = "packages", defaultSettings = packagesSettings)
 
@@ -50,10 +50,17 @@ object Build extends Build {
   lazy val baseSettings = generalSettings
   lazy val packagesSettings = generalSettings
 
-  def baseSharedSettings = Seq(
+  def baseSharedJvmSettings = Seq(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "uk.co.turingatemyhamster" %%%! "datatree_shared" % "0.1.2"
+      "uk.co.turingatemyhamster" %% "datatree_shared" % "0.1.2"
+    )
+  )
+
+  def baseSharedJsSettings = Seq(
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "uk.co.turingatemyhamster" %%% "datatree_shared" % "0.1.2"
     )
   )
 
